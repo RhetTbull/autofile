@@ -241,8 +241,6 @@ class FileTemplate:
         self.filepath = filepath
         self.exiftool_path = exiftool_path
         self.hook = PM.hook
-        for plugin in PM.get_plugins():
-            print(f"{plugin=}")
 
         # holds value of current date/time for {today.x} fields
         # gets initialized in get_template_value
@@ -459,7 +457,7 @@ class FileTemplate:
                 default=default,
                 options=self.options,
             )
-            print(f"{vals=}, {field=}, {subfield=}, {default=}")
+            # ZZZ TODO: handle dir/filename sanitization here
 
             if not vals:
                 vals = [None]
