@@ -9,9 +9,9 @@ from autofile.datetime_formatter import DateTimeFormatter
 from autofile.renderoptions import RenderOptions
 
 FIELDS = {
+    "{created}": "File creation date/time",
     "{modified}": "File modification date/time",
     "{accessed}": "File last accessed date/time",
-    "{created}": "File creation date/time",
 }
 
 DATE_TIME_ATTRIBUTES = {
@@ -52,12 +52,12 @@ def get_template_value(
 
     stat_info = os.stat(filepath)
     dt = None
-    if field == "modified":
+    if field == "created":
+        dt = datetime.datetime.fromtimestamp(stat_info.st_birthtime)
+    elif field == "modified":
         dt = datetime.datetime.fromtimestamp(stat_info.st_mtime)
     elif field == "accessed":
         dt = datetime.datetime.fromtimestamp(stat_info.st_atime)
-    elif field == "created":
-        dt = datetime.datetime.fromtimestamp(stat_info.st_birthtime)
     else:
         raise ValueError(f"Unknown field {field}")
 
