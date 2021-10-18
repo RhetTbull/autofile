@@ -1,0 +1,70 @@
+"""Plugin for autofile template to process file dates"""
+
+import datetime
+import os
+from typing import Dict, List, Optional
+
+from autofile import hookimpl
+from autofile.datetime_formatter import DateTimeFormatter
+from autofile.renderoptions import RenderOptions
+
+FIELDS = {
+    "{modified}": "File modification date/time",
+    "{accessed}": "File last accessed date/time",
+    "{created}": "File creation date/time",
+}
+
+DATE_TIME_ATTRIBUTES = {
+    "date": "ISO date, e.g. 2020-03-22",
+    "year": "4-digit year, e.g. 2021",
+    "yy": "2-digit year, e.g. 21",
+    "month": "Month name as locale's full name, e.g. December",
+    "mon": "Month as locale's abbreviated name, e.g. Dec",
+    "mm": "2-digit month, e.g. 12",
+    "dd": "2-digit day of the month, e.g. 22",
+    "dow": "Day of the week as locale's full name, e.g. Tuesday",
+    "doy": "Julian day of year starting from 001",
+    "hour": "2-digit hour, e.g. 10",
+    "min": "2-digit minute, e.g. 15",
+    "sec": "2-digit second, e.g. 30",
+}
+
+
+@hookimpl
+def get_template_help() -> Dict:
+    return FIELDS
+
+
+@hookimpl
+def get_template_value(
+    filepath: str, field: str, subfield: str, default: str, options: RenderOptions
+) -> Optional[List[Optional[str]]]:
+    """lookup value for file dates
+
+    Args:
+        field: template field to find value for.
+
+    Returns:
+        The matching template value (which may be None).
+    """
+    if "{" + field + "}" not in FIELDS:
+        return None
+
+    stat_info = os.stat(filepath)
+    dt = None
+    if field == "modified":
+        dt = datetime.datetime.fromtimestamp(stat_info.st_mtime)
+    elif field == "accessed":
+        dt = datetime.datetime.fromtimestamp(stat_info.st_atime)
+    elif field == "created":
+        dt = datetime.datetime.fromtimestamp(stat_info.st_birthtime)
+    else:
+        raise ValueError(f"Unknown field {field}")
+
+    if not subfield:
+        return [dt.isoformat()]
+
+    if subfield in DATE_TIME_ATTRIBUTES:
+        return [getattr(DateTimeFormatter(dt), subfield)]
+    else:
+        raise ValueError(f"Unknown subfield {subfield}")

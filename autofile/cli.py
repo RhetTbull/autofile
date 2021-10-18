@@ -5,7 +5,7 @@ import os
 import pathlib
 import sys
 from functools import partial
-from typing import List
+from typing import List, Optional
 
 import click
 from cloup import (
@@ -35,10 +35,10 @@ from rich.traceback import install
 from yaspin import yaspin
 
 from ._version import __version__
+from .constants import APP_NAME
+from .renderoptions import RenderOptions
+from .template import FileTemplate
 from .utils import green, pluralize, red
-
-# name of the script
-APP_NAME = "autofile"
 
 # Set up rich console
 _console = Console()
@@ -171,6 +171,7 @@ def cli(
     verbose_,
     plain,
     copy,
+    hardlink,
     dry_run,
     files,
 ):
@@ -196,7 +197,16 @@ def cli(
         print_help_msg(cli)
         sys.exit(1)
 
-    process_files_ = partial(process_files, walk=walk, dry_run=dry_run)
+    process_files_ = partial(
+        process_files,
+        target=target,
+        directory_template=directory,
+        filename_template=filename,
+        walk=walk,
+        copy=copy,
+        hardlink=hardlink,
+        dry_run=dry_run,
+    )
 
     if not _verbose:
         with yaspin(text=text):
@@ -212,7 +222,16 @@ def cli(
     echo("Done.")
 
 
-def process_files(files, walk: bool = False, dry_run: bool = False) -> int:
+def process_files(
+    files,
+    target: str,
+    directory_template: Optional[str] = None,
+    filename_template: Optional[str] = None,
+    walk: bool = False,
+    copy: bool = False,
+    hardlink: bool = False,
+    dry_run: bool = False,
+) -> int:
     """Process files"""
     files_processed = 0
     for filename in files:
@@ -227,6 +246,10 @@ def process_files(files, walk: bool = False, dry_run: bool = False) -> int:
                 verbose(f"Skipping directory {file}")
         else:
             verbose(f"Processing file {file}")
+            options = RenderOptions()
+            template = FileTemplate(filename)
+            results = template.render(directory_template, options=options)
+            print(results)
             files_processed += 1
     return files_processed
 
