@@ -24,6 +24,8 @@ DEFAULT_PLUGINS = (
     "autofile.plugins.templates.filepath",
     "autofile.plugins.templates.filestat",
     "autofile.plugins.templates.filedates",
+    "autofile.plugins.templates.uti",
+    "autofile.plugins.templates.mdls",
 )
 
 
@@ -55,109 +57,93 @@ OTL_GRAMMAR_MODEL = str(pathlib.Path(__file__).parent / "template.tx")
 """TextX metamodel for template language """
 
 
-DATETIME_SUBFIELDS = [
-    "date",
-    "year",
-    "yy",
-    "mm",
-    "month",
-    "mon",
-    "dd",
-    "dow",
-    "doy",
-    "hour",
-    "min",
-    "sec",
-    "strftime",
-]
-
 # Permitted substitutions (each of these returns a single value or None)
-TEMPLATE_SUBSTITUTIONS = {
-    "{created}": "Photo's creation date if set in the EXIF data, otherwise null; ISO 8601 format",
-    "{created.date}": "Photo's creation date in ISO format, e.g. '2020-03-22'",
-    "{created.year}": "4-digit year of photo creation time",
-    "{created.yy}": "2-digit year of photo creation time",
-    "{created.mm}": "2-digit month of the photo creation time (zero padded)",
-    "{created.month}": "Month name in user's locale of the photo creation time",
-    "{created.mon}": "Month abbreviation in the user's locale of the photo creation time",
-    "{created.dd}": "2-digit day of the month (zero padded) of photo creation time",
-    "{created.dow}": "Day of week in user's locale of the photo creation time",
-    "{created.doy}": "3-digit day of year (e.g Julian day) of photo creation time, starting from 1 (zero padded)",
-    "{created.hour}": "2-digit hour of the photo creation time",
-    "{created.min}": "2-digit minute of the photo creation time",
-    "{created.sec}": "2-digit second of the photo creation time",
-    "{created.strftime}": "Apply strftime template to file creation date/time. Should be used in form "
-    + "{created.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
-    + "{created.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
-    + "If used with no template will return null value. "
-    + "See https://strftime.org/ for help on strftime templates.",
-    "{modified}": "Photo's modification date if set in the EXIF data, otherwise null; ISO 8601 format",
-    "{modified.date}": "Photo's modification date in ISO format, e.g. '2020-03-22'; uses creation date if photo is not modified",
-    "{modified.year}": "4-digit year of photo modification time; uses creation date if photo is not modified",
-    "{modified.yy}": "2-digit year of photo modification time; uses creation date if photo is not modified",
-    "{modified.mm}": "2-digit month of the photo modification time (zero padded); uses creation date if photo is not modified",
-    "{modified.month}": "Month name in user's locale of the photo modification time; uses creation date if photo is not modified",
-    "{modified.mon}": "Month abbreviation in the user's locale of the photo modification time; uses creation date if photo is not modified",
-    "{modified.dd}": "2-digit day of the month (zero padded) of the photo modification time; uses creation date if photo is not modified",
-    "{modified.dow}": "Day of week in user's locale of the photo modification time; uses creation date if photo is not modified",
-    "{modified.doy}": "3-digit day of year (e.g Julian day) of photo modification time, starting from 1 (zero padded); uses creation date if photo is not modified",
-    "{modified.hour}": "2-digit hour of the photo modification time; uses creation date if photo is not modified",
-    "{modified.min}": "2-digit minute of the photo modification time; uses creation date if photo is not modified",
-    "{modified.sec}": "2-digit second of the photo modification time; uses creation date if photo is not modified",
-    "{modified.strftime}": "Apply strftime template to file modification date/time. Should be used in form "
-    + "{modified.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
-    + "{modified.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
-    + "If used with no template will return null value. Uses creation date if photo is not modified. "
-    + "See https://strftime.org/ for help on strftime templates.",
-    "{today.date}": "Current date in iso format, e.g. '2020-03-22'",
-    "{today.year}": "4-digit year of current date",
-    "{today.yy}": "2-digit year of current date",
-    "{today.mm}": "2-digit month of the current date (zero padded)",
-    "{today.month}": "Month name in user's locale of the current date",
-    "{today.mon}": "Month abbreviation in the user's locale of the current date",
-    "{today.dd}": "2-digit day of the month (zero padded) of current date",
-    "{today.dow}": "Day of week in user's locale of the current date",
-    "{today.doy}": "3-digit day of year (e.g Julian day) of current date, starting from 1 (zero padded)",
-    "{today.hour}": "2-digit hour of the current date",
-    "{today.min}": "2-digit minute of the current date",
-    "{today.sec}": "2-digit second of the current date",
-    "{today.strftime}": "Apply strftime template to current date/time. Should be used in form "
-    + "{today.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
-    + "{today.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
-    + "If used with no template will return null value. "
-    + "See https://strftime.org/ for help on strftime templates.",
-    # "{osxphotos_version}": f"The osxphotos version, e.g. '{__version__}'",
-    # "{osxphotos_cmd_line}": "The full command line used to run osxphotos",
-}
+# TEMPLATE_SUBSTITUTIONS = {
+#     "{created}": "Photo's creation date if set in the EXIF data, otherwise null; ISO 8601 format",
+#     "{created.date}": "Photo's creation date in ISO format, e.g. '2020-03-22'",
+#     "{created.year}": "4-digit year of photo creation time",
+#     "{created.yy}": "2-digit year of photo creation time",
+#     "{created.mm}": "2-digit month of the photo creation time (zero padded)",
+#     "{created.month}": "Month name in user's locale of the photo creation time",
+#     "{created.mon}": "Month abbreviation in the user's locale of the photo creation time",
+#     "{created.dd}": "2-digit day of the month (zero padded) of photo creation time",
+#     "{created.dow}": "Day of week in user's locale of the photo creation time",
+#     "{created.doy}": "3-digit day of year (e.g Julian day) of photo creation time, starting from 1 (zero padded)",
+#     "{created.hour}": "2-digit hour of the photo creation time",
+#     "{created.min}": "2-digit minute of the photo creation time",
+#     "{created.sec}": "2-digit second of the photo creation time",
+#     "{created.strftime}": "Apply strftime template to file creation date/time. Should be used in form "
+#     + "{created.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
+#     + "{created.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
+#     + "If used with no template will return null value. "
+#     + "See https://strftime.org/ for help on strftime templates.",
+#     "{modified}": "Photo's modification date if set in the EXIF data, otherwise null; ISO 8601 format",
+#     "{modified.date}": "Photo's modification date in ISO format, e.g. '2020-03-22'; uses creation date if photo is not modified",
+#     "{modified.year}": "4-digit year of photo modification time; uses creation date if photo is not modified",
+#     "{modified.yy}": "2-digit year of photo modification time; uses creation date if photo is not modified",
+#     "{modified.mm}": "2-digit month of the photo modification time (zero padded); uses creation date if photo is not modified",
+#     "{modified.month}": "Month name in user's locale of the photo modification time; uses creation date if photo is not modified",
+#     "{modified.mon}": "Month abbreviation in the user's locale of the photo modification time; uses creation date if photo is not modified",
+#     "{modified.dd}": "2-digit day of the month (zero padded) of the photo modification time; uses creation date if photo is not modified",
+#     "{modified.dow}": "Day of week in user's locale of the photo modification time; uses creation date if photo is not modified",
+#     "{modified.doy}": "3-digit day of year (e.g Julian day) of photo modification time, starting from 1 (zero padded); uses creation date if photo is not modified",
+#     "{modified.hour}": "2-digit hour of the photo modification time; uses creation date if photo is not modified",
+#     "{modified.min}": "2-digit minute of the photo modification time; uses creation date if photo is not modified",
+#     "{modified.sec}": "2-digit second of the photo modification time; uses creation date if photo is not modified",
+#     "{modified.strftime}": "Apply strftime template to file modification date/time. Should be used in form "
+#     + "{modified.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
+#     + "{modified.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
+#     + "If used with no template will return null value. Uses creation date if photo is not modified. "
+#     + "See https://strftime.org/ for help on strftime templates.",
+#     "{today.date}": "Current date in iso format, e.g. '2020-03-22'",
+#     "{today.year}": "4-digit year of current date",
+#     "{today.yy}": "2-digit year of current date",
+#     "{today.mm}": "2-digit month of the current date (zero padded)",
+#     "{today.month}": "Month name in user's locale of the current date",
+#     "{today.mon}": "Month abbreviation in the user's locale of the current date",
+#     "{today.dd}": "2-digit day of the month (zero padded) of current date",
+#     "{today.dow}": "Day of week in user's locale of the current date",
+#     "{today.doy}": "3-digit day of year (e.g Julian day) of current date, starting from 1 (zero padded)",
+#     "{today.hour}": "2-digit hour of the current date",
+#     "{today.min}": "2-digit minute of the current date",
+#     "{today.sec}": "2-digit second of the current date",
+#     "{today.strftime}": "Apply strftime template to current date/time. Should be used in form "
+#     + "{today.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
+#     + "{today.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
+#     + "If used with no template will return null value. "
+#     + "See https://strftime.org/ for help on strftime templates.",
+#     # "{osxphotos_version}": f"The osxphotos version, e.g. '{__version__}'",
+#     # "{osxphotos_cmd_line}": "The full command line used to run osxphotos",
+# }
 
-TEMPLATE_SUBSTITUTIONS_PATHLIB = {
-    # "{export_dir}": "The full path to the export directory",
-    "{filepath}": "The full path to the file being processed.",
-}
+# TEMPLATE_SUBSTITUTIONS_PATHLIB = {
+#     # "{export_dir}": "The full path to the export directory",
+#     "{filepath}": "The full path to the file being processed.",
+# }
 
-# Permitted multi-value substitutions (each of these returns None or 1 or more values)
-TEMPLATE_SUBSTITUTIONS_MULTI_VALUED = {
-    "{GROUP}": "The tag group (as defined by exiftool) for the tag being processed, for example, 'EXIF'; for use with --tag-format.",
-    "{TAG}": "The name of the tag being processed, for example, 'ImageDescription'; for use with --tag-format.",
-    "{VALUE}": "The value of the tag being processed, for example, 'My Image Description'; for use with --tag-format.",
-    # "{shell_quote}": "Use in form '{shell_quote,TEMPLATE}'; quotes the rendered TEMPLATE value(s) for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
-    "{strip}": "Use in form '{strip,TEMPLATE}'; strips whitespace from begining and end of rendered TEMPLATE value(s).",
-    # "{function}": "Execute a python function from an external file and use return value as template substitution. "
-    # + "Use in format: {function:file.py::function_name} where 'file.py' is the name of the python file and 'function_name' is the name of the function to call. "
-    # + "The function will be passed the PhotoInfo object for the photo. "
-    # + "See https://github.com/RhetTbull/osxphotos/blob/master/examples/template_function.py for an example of how to implement a template function.",
-}
+# # Permitted multi-value substitutions (each of these returns None or 1 or more values)
+# TEMPLATE_SUBSTITUTIONS_MULTI_VALUED = {
+#     "{GROUP}": "The tag group (as defined by exiftool) for the tag being processed, for example, 'EXIF'; for use with --tag-format.",
+#     "{TAG}": "The name of the tag being processed, for example, 'ImageDescription'; for use with --tag-format.",
+#     "{VALUE}": "The value of the tag being processed, for example, 'My Image Description'; for use with --tag-format.",
+#     # "{shell_quote}": "Use in form '{shell_quote,TEMPLATE}'; quotes the rendered TEMPLATE value(s) for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
+#     "{strip}": "Use in form '{strip,TEMPLATE}'; strips whitespace from begining and end of rendered TEMPLATE value(s).",
+#     # "{function}": "Execute a python function from an external file and use return value as template substitution. "
+#     # + "Use in format: {function:file.py::function_name} where 'file.py' is the name of the python file and 'function_name' is the name of the function to call. "
+#     # + "The function will be passed the PhotoInfo object for the photo. "
+#     # + "See https://github.com/RhetTbull/osxphotos/blob/master/examples/template_function.py for an example of how to implement a template function.",
+# }
 
-TEMPLATE_SUBSTITUTIONS_EXIFTOOL = {
-    "{Group:Tag}": "Any valid exiftool tag with optional group name, e.g. '{EXIF:Make}', '{Make}', '{IPTC:Keywords}', '{ISO}'; invalid or missing tags will be ignored."
-}
+# TEMPLATE_SUBSTITUTIONS_EXIFTOOL = {
+#     "{Group:Tag}": "Any valid exiftool tag with optional group name, e.g. '{EXIF:Make}', '{Make}', '{IPTC:Keywords}', '{ISO}'; invalid or missing tags will be ignored."
+# }
 
-TEMPLATE_SUBSTITUTIONS_ALL = {
-    **TEMPLATE_SUBSTITUTIONS_EXIFTOOL,
-    **TEMPLATE_SUBSTITUTIONS_MULTI_VALUED,
-    **TEMPLATE_SUBSTITUTIONS_PATHLIB,
-    **TEMPLATE_SUBSTITUTIONS,
-}
+# TEMPLATE_SUBSTITUTIONS_ALL = {
+#     **TEMPLATE_SUBSTITUTIONS_EXIFTOOL,
+#     **TEMPLATE_SUBSTITUTIONS_MULTI_VALUED,
+#     **TEMPLATE_SUBSTITUTIONS_PATHLIB,
+#     **TEMPLATE_SUBSTITUTIONS,
+# }
 
 FILTER_VALUES = {
     "lower": "Convert value to lower case, e.g. 'Value' => 'value'.",
@@ -173,28 +159,28 @@ FILTER_VALUES = {
 }
 
 # Just the substitutions without the braces
-SINGLE_VALUE_SUBSTITUTIONS = [
-    field.replace("{", "").replace("}", "") for field in TEMPLATE_SUBSTITUTIONS
-]
+# SINGLE_VALUE_SUBSTITUTIONS = [
+#     field.replace("{", "").replace("}", "") for field in TEMPLATE_SUBSTITUTIONS
+# ]
 
-PATHLIB_SUBSTITUTIONS = [
-    field.replace("{", "").replace("}", "") for field in TEMPLATE_SUBSTITUTIONS_PATHLIB
-]
+# PATHLIB_SUBSTITUTIONS = [
+#     field.replace("{", "").replace("}", "") for field in TEMPLATE_SUBSTITUTIONS_PATHLIB
+# ]
 
-MULTI_VALUE_SUBSTITUTIONS = [
-    field.replace("{", "").replace("}", "")
-    for field in TEMPLATE_SUBSTITUTIONS_MULTI_VALUED
-]
+# MULTI_VALUE_SUBSTITUTIONS = [
+#     field.replace("{", "").replace("}", "")
+#     for field in TEMPLATE_SUBSTITUTIONS_MULTI_VALUED
+# ]
 
-FIELD_NAMES = (
-    SINGLE_VALUE_SUBSTITUTIONS + MULTI_VALUE_SUBSTITUTIONS + PATHLIB_SUBSTITUTIONS
-)
+# FIELD_NAMES = (
+#     SINGLE_VALUE_SUBSTITUTIONS + MULTI_VALUE_SUBSTITUTIONS + PATHLIB_SUBSTITUTIONS
+# )
 
 # PATH_SEP_DEFAULT = os.path.sep
 
 
-class PhotoTemplateParser:
-    """Parser for PhotoTemplate"""
+class FileTemplateParser:
+    """Parser for FileTemplate"""
 
     # implemented as Singleton
 
@@ -227,14 +213,10 @@ class FileTemplate:
     """FileTemplate class to render a template string from a PhotoInfo object"""
 
     def __init__(self, filepath: str, exiftool_path: Optional[str] = None):
-        """Inits PhotoTemplate class with photo
+        """Inits FileTemplate class with filepath and exiftool_path"""
 
-        Args:
-            photo: a PhotoInfo instance.
-            exiftool_path: optional path to exiftool for use with {exiftool:} template; if not provided, will look for exiftool in $PATH
-        """
         if not pathlib.Path(filepath).exists():
-            raise FileNotFoundError(f"Photo path {filepath} does not exist")
+            raise FileNotFoundError(f"File {filepath} does not exist")
         if exiftool_path and not pathlib.Path(exiftool_path).exists():
             raise FileNotFoundError(f"Exiftool path {exiftool_path} does not exist")
 
@@ -242,12 +224,8 @@ class FileTemplate:
         self.exiftool_path = exiftool_path
         self.hook = PM.hook
 
-        # holds value of current date/time for {today.x} fields
-        # gets initialized in get_template_value
-        self.today = None
-
         # get parser singleton
-        self.parser = PhotoTemplateParser()
+        self.parser = FileTemplateParser()
 
         # initialize render options
         # this will be done in render() but for testing, some of the lookup functions are called directly
@@ -309,9 +287,7 @@ class FileTemplate:
             # empty string
             return [], []
 
-        rendered, unmatched = self._render_statement(model)
-        rendered = [r for r in rendered if NONE_STR_SENTINEL not in r]
-        return rendered, unmatched
+        return self._render_statement(model)
 
     def _render_statement(
         self,
@@ -365,10 +341,6 @@ class FileTemplate:
             filters = []
             if ts.template.filter is not None:
                 filters = ts.template.filter.value
-
-            # # process path_sep
-            # if ts.template.pathsep is not None:
-            #     path_sep = ts.template.pathsep.value
 
             # process delim
             if ts.template.delim is not None:
@@ -424,18 +396,7 @@ class FileTemplate:
                 negation = None
                 conditional_value = []
 
-            vals = []
-            # if (
-            #     field in SINGLE_VALUE_SUBSTITUTIONS
-            #     or field.split(".")[0] in SINGLE_VALUE_SUBSTITUTIONS
-            # ):
-            #     vals = self.get_template_value(
-            #         field,
-            #         default=default,
-            #         subfield=subfield,
-            #         # delim=delim or self.inplace_sep,
-            #         # path_sep=path_sep,
-            #     )
+            # vals = []
             # # elif field == "function":
             # #     if subfield is None:
             # #         raise ValueError(
@@ -444,11 +405,6 @@ class FileTemplate:
             # #     vals = self.get_template_value_function(
             # #         subfield,
             # #     )
-            # elif field in MULTI_VALUE_SUBSTITUTIONS:
-            #     vals = self.get_template_value_multi(field, subfield, default=default)
-            # elif field.split(".")[0] in PATHLIB_SUBSTITUTIONS:
-            #     vals = self.get_template_value_pathlib(field)
-            # else:
             # try plugins
             vals = self.hook.get_template_value(
                 filepath=self.filepath,
@@ -458,6 +414,9 @@ class FileTemplate:
                 options=self.options,
             )
             # ZZZ TODO: handle dir/filename sanitization here
+            # also handle unhandled values
+            if vals is None:
+                print(f"Error: unhandled field: {field}")
 
             if not vals:
                 vals = [None]

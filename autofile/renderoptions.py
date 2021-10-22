@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from .constants import INPLACE_DEFAULT, NONE_STR_SENTINEL
+from .constants import INPLACE_DEFAULT, NONE_STR_DEFAULT, NONE_STR_SENTINEL
 
 
 @dataclass
@@ -25,7 +25,7 @@ class RenderOptions:
     """
 
     tag: Optional[str] = None
-    none_str: str = NONE_STR_SENTINEL
+    none_str: str = NONE_STR_DEFAULT
     expand_inplace: bool = False
     inplace_sep: Optional[str] = INPLACE_DEFAULT
     filename: bool = False

@@ -27,6 +27,11 @@ DATE_TIME_ATTRIBUTES = {
     "hour": "2-digit hour, e.g. 10",
     "min": "2-digit minute, e.g. 15",
     "sec": "2-digit second, e.g. 30",
+    "strftime": "Apply strftime template to date/time. Should be used in form "
+    + "{created.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
+    + "{created.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
+    + "If used with no template will return null value. "
+    + "See https://strftime.org/ for help on strftime templates.",
 }
 
 
@@ -47,24 +52,35 @@ def get_template_value(
     Returns:
         The matching template value (which may be None).
     """
-    if "{" + field + "}" not in FIELDS:
+    field = field.split(".", 1)
+    if "{" + field[0] + "}" not in FIELDS:
         return None
 
     stat_info = os.stat(filepath)
     dt = None
-    if field == "created":
+    if field[0] == "created":
         dt = datetime.datetime.fromtimestamp(stat_info.st_birthtime)
-    elif field == "modified":
+    elif field[0] == "modified":
         dt = datetime.datetime.fromtimestamp(stat_info.st_mtime)
-    elif field == "accessed":
+    elif field[0] == "accessed":
         dt = datetime.datetime.fromtimestamp(stat_info.st_atime)
     else:
         raise ValueError(f"Unknown field {field}")
 
-    if not subfield:
+    if len(field) == 1:
         return [dt.isoformat()]
 
-    if subfield in DATE_TIME_ATTRIBUTES:
-        return [getattr(DateTimeFormatter(dt), subfield)]
-    else:
+    subfield = field[1]
+    if subfield not in DATE_TIME_ATTRIBUTES:
         raise ValueError(f"Unknown subfield {subfield}")
+
+    if subfield == "strftime":
+        if default:
+            try:
+                value = dt.strftime(default[0]) if dt else None
+            except:
+                raise ValueError(f"Invalid strftime template: '{default}'")
+        else:
+            value = None
+        return [value]
+    return [getattr(DateTimeFormatter(dt), subfield)]

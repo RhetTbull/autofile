@@ -57,9 +57,10 @@ setup(
         "pluggy>=1.0.0,<=2.0.0",
         "pyobjc-core>=7.3,<8.0",
         "pyobjc-framework-Cocoa>=7.3,<8.0",
+        "pyobjc-framework-CoreServices>=7.3,<8.0",
+        "pyobjc-framework-FSEvents>=7.3,<8.0",
         "rich>=10.11.0,<11.0.0",
-        "textX>=2.3.0,<3.0.0"
-        "yaspin>=2.1.0",
+        "textX>=2.3.0,<3.0.0" "yaspin>=2.1.0",
     ],
     python_requires=">=3.7",
     entry_points={

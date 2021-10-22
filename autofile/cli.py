@@ -1,7 +1,5 @@
 """ Use template to automatically move files into directories """
 
-import datetime
-import os
 import pathlib
 import sys
 from functools import partial
@@ -35,6 +33,7 @@ from rich.traceback import install
 from yaspin import yaspin
 
 from ._version import __version__
+from .autofile import process_files
 from .constants import APP_NAME
 from .renderoptions import RenderOptions
 from .template import FileTemplate
@@ -132,6 +131,38 @@ formatter_settings = HelpFormatter.settings(
     constraint=RequireAtLeast(1),
 )
 @option_group(
+    "Filter Options",
+    option(
+        "--glob",
+        "-g",
+        multiple=True,
+        metavar="PATTERN",
+        help="Filter files to process with a glob pattern, e.g. '--glob \"*.jpg\"' "
+        "--glob may be repeated to use more than one pattern. "
+        'Multiple patterns treated as "OR", that is, a file that matches one or more patterns will be processed. ',
+    ),
+    option(
+        "--regex",
+        "-r",
+        multiple=True,
+        metavar="PATTERN",
+        help="Filter files to process with a regex pattern, e.g. '--regex \"IMG_[1-3].*\"' "
+        "--regex may be repeated to use more than one pattern. "
+        'Multiple patterns treated as "OR", that is, a file that matches one or more patterns will be processed. ',
+    ),
+    option(
+        "--filter",
+        "-f",
+        "filter_template",
+        multiple=True,
+        metavar="TEMPLATE_PATTERN",
+        help="Filter files to process that match a metadata template pattern, e.g. '--filter \"{mdls:kMDItemKind contains image}\"'. "
+        "--filter matches the file if TEMPLATE_PATTERN evaluates to a non-null value. "
+        "--filter may be repeated to use more than one pattern. "
+        'Multiple patterns treated as "OR", that is, a file that matches one or more patterns will be processed. ',
+    ),
+)
+@option_group(
     "Options",
     option("--walk", "-w", is_flag=True, help="Recursively walk directories."),
     option("--verbose", "-V", "verbose_", is_flag=True, help="Show verbose output."),
@@ -173,6 +204,9 @@ def cli(
     copy,
     hardlink,
     dry_run,
+    glob,
+    regex,
+    filter_template,
     files,
 ):
     """move or copy files into directories based on a template string"""
@@ -183,6 +217,13 @@ def cli(
     # used to control whether to print out verbose output
     global _verbose
     _verbose = verbose_
+
+    if plain:
+        # Plain text mode, disable rich output (used for testing)
+        global _console
+        global _console_stderr
+        _console = Console(highlighter=NullHighlighter())
+        _console_stderr = Console(stderr=True, highlighter=NullHighlighter())
 
     # create nice looking text for status
     filenames = [file for file in files if pathlib.Path(file).is_file()]
@@ -206,6 +247,10 @@ def cli(
         copy=copy,
         hardlink=hardlink,
         dry_run=dry_run,
+        glob=glob,
+        regex=regex,
+        filter_template=filter_template,
+        verbose=verbose,
     )
 
     if not _verbose:
@@ -220,38 +265,6 @@ def cli(
     )
 
     echo("Done.")
-
-
-def process_files(
-    files,
-    target: str,
-    directory_template: Optional[str] = None,
-    filename_template: Optional[str] = None,
-    walk: bool = False,
-    copy: bool = False,
-    hardlink: bool = False,
-    dry_run: bool = False,
-) -> int:
-    """Process files"""
-    files_processed = 0
-    for filename in files:
-        file = pathlib.Path(filename)
-        if file.is_dir():
-            if walk:
-                verbose(f"Processing directory {file}")
-                files_processed += process_files(
-                    file.iterdir(), walk=walk, dry_run=dry_run
-                )
-            else:
-                verbose(f"Skipping directory {file}")
-        else:
-            verbose(f"Processing file {file}")
-            options = RenderOptions()
-            template = FileTemplate(filename)
-            results = template.render(directory_template, options=options)
-            print(results)
-            files_processed += 1
-    return files_processed
 
 
 def main():
