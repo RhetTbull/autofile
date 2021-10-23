@@ -124,7 +124,7 @@ class FileTemplateParser:
 
 
 class FileTemplate:
-    """FileTemplate class to render a template string from a PhotoInfo object"""
+    """FileTemplate class to render a template string from a file and it's associated metadata"""
 
     def __init__(self, filepath: str):
         """Inits FileTemplate class with filepath and exiftool_path"""
