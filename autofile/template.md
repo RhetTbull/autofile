@@ -100,16 +100,4 @@ If you want to include "{" or "}" in the output, use "{openbrace}" or "{closebra
 
 e.g. `"{created.year}/{openbrace}{audio.title}{closebrace}"` would result in `"2020/{file Title}"`.
 
-Some templates have additional modifiers that can be appended to the template name. For example, the `{filepath}` template represents the path of the file being processed. You can access various parts of the path using the following modifiers:
-
-- `{filepath.parent}`: the parent directory
-- `{filepath.name}`: the name of the file or final sub-directory
-- `{filepath.stem}`: the name of the file without the extension
-- `{filepath.suffix}`: the suffix of the file including the leading '.'
-
-For example, ff the field `{filepath}` is `'/Shared/files/IMG_1234.JPG'`:
-
-- `{filepath.parent}` is `'/Shared/files'`
-- `{filepath.name}` is `'IMG_1234.JPG'`
-- `{filepath.stem}` is `'IMG_1234'`
-- `{filepath.suffix}` is `'.JPG'`
+Some templates have additional modifiers that can be appended to the template name to access specific attributes of the template field. For example, the `{filepath}` template returns the path of the file being processed and `{filepath.parent}` returns the parent directory. 

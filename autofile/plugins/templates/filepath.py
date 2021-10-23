@@ -10,11 +10,37 @@ from autofile.renderoptions import RenderOptions
 
 FIELDS = {"{filepath}": "The full path to the file being processed"}
 
+SUBFIELDS = {
+    "name": "The name of the file",
+    "stem": "The name of the file without the suffix (extension)",
+    "suffix": "The suffix (extension) of the file, including the leading `.`",
+    "parent": "The parent directory of the file",
+}
+
 
 @hookimpl
 def get_template_help() -> Iterable:
-    pass
-    # return [FIELDS]
+    text = """
+    The `{filepath}` fields returns the full path to the file being processed. 
+    Various attributes of the path can be accessed using dot notation. For example, 
+    `{filepath.name}` returns just the name of the file without the full path. 
+    `{filepath.parent}` returns the parent directory of the file.
+    
+    Path attributes can be chained, for example `{filepath.parent.name}` returns just the name of the immediate parent directory without the full directory path.
+
+    For example, if the field `{filepath}` is `'/Shared/files/IMG_1234.JPG'`:
+
+    - `{filepath.parent}` is `'/Shared/files'`
+    - `{filepath.name}` is `'IMG_1234.JPG'`
+    - `{filepath.stem}` is `'IMG_1234'`
+    - `{filepath.suffix}` is `'.JPG'`
+
+    The following attributes are available:
+    
+    """
+    fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
+    subfields = [["Subfield", "Description"], *[[k, v] for k, v in SUBFIELDS.items()]]
+    return ["**File Path Fields**", fields, text, subfields]
 
 
 @hookimpl
