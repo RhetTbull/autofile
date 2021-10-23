@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
-import sys
 import os.path
+import sys
+
+from setuptools import find_packages, setup
 
 PACKAGE_NAME = "autofile"
 
@@ -61,6 +62,7 @@ setup(
         "pyobjc-framework-FSEvents>=7.3,<8.0",
         "rich>=10.11.0,<11.0.0",
         "textX>=2.3.0,<3.0.0" "yaspin>=2.1.0",
+        "tinytag>1.6.0,<2.0.0",
     ],
     python_requires=">=3.7",
     entry_points={

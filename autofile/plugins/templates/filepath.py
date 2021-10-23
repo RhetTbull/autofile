@@ -2,16 +2,19 @@
 
 import pathlib
 import shlex
-from typing import Dict, List, Optional
+from typing import Iterable, List, Optional
 
 from autofile import hookimpl
 from autofile.path_utils import sanitize_dirname, sanitize_pathpart
 from autofile.renderoptions import RenderOptions
 
+FIELDS = {"{filepath}": "The full path to the file being processed"}
+
 
 @hookimpl
-def get_template_help() -> Dict:
-    return {"{filepath}": "The full path to the file being processed"}
+def get_template_help() -> Iterable:
+    pass
+    # return [FIELDS]
 
 
 @hookimpl

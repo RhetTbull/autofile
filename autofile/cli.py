@@ -1,6 +1,8 @@
 """ Use template to automatically move files into directories """
 
+import io
 import pathlib
+import re
 import sys
 from functools import partial
 from typing import List, Optional
@@ -29,15 +31,15 @@ from cloup.constraints import (
 )
 from rich.console import Console
 from rich.highlighter import NullHighlighter
-from rich.traceback import install
+from rich.markdown import Markdown
 from yaspin import yaspin
 
 from ._version import __version__
 from .autofile import process_files
 from .constants import APP_NAME
 from .renderoptions import RenderOptions
-from .template import FileTemplate
-from .utils import green, pluralize, red
+from .template import get_template_help
+from .utils import green, pluralize, red, bold
 
 # Set up rich console
 _console = Console()
@@ -87,9 +89,43 @@ class AutofileCommand(Command):
         formatter = HelpFormatter()
 
         formatter.write("\n\n")
+        formatter.write(rich_text(bold("Template System"), width=formatter.width))
+        formatter.write("\n\n")
+        for help_item in get_template_help():
+            # items from get_template_help are either markdown strings or lists of lists
+            if type(help_item) is str:
+                formatter.write(format_markdown_str(help_item, width=formatter.width))
+                formatter.write("\n")
+            elif isinstance(help_item, (tuple, list)):
+                help_list = [tuple(rich_text(bold(col)) for col in help_item[0])]
+                help_list.extend(tuple(h) for h in help_item[1:])
+                formatter.write_dl(help_list)
+                formatter.write("\n")
         formatter.write_text("")
         help_text += formatter.getvalue()
         return help_text
+
+    def get_help_option(self, ctx: Context) -> Optional["click.Option"]:
+        """Returns the help option object."""
+        # copied from Click source code and modified to use pager
+        help_options = self.get_help_option_names(ctx)
+
+        if not help_options or not self.add_help_option:
+            return None
+
+        def show_help(ctx: Context, param: "click.Parameter", value: str) -> None:
+            if value and not ctx.resilient_parsing:
+                click.echo_via_pager(ctx.get_help(), color=ctx.color)
+                ctx.exit()
+
+        return click.Option(
+            help_options,
+            is_flag=True,
+            is_eager=True,
+            expose_value=False,
+            callback=show_help,
+            help="Show this message and exit.",
+        )
 
 
 formatter_settings = HelpFormatter.settings(
@@ -211,9 +247,6 @@ def cli(
 ):
     """move or copy files into directories based on a template string"""
 
-    # install rich traceback output
-    install(show_locals=True)
-
     # used to control whether to print out verbose output
     global _verbose
     _verbose = verbose_
@@ -265,6 +298,72 @@ def cli(
     )
 
     echo("Done.")
+
+
+def rich_text(text, width=78):
+    """Return rich formatted text"""
+    sio = io.StringIO()
+    console = Console(file=sio, force_terminal=True, width=width)
+    console.print(text)
+    rich_text = sio.getvalue()
+    rich_text = rich_text.rstrip()
+    sio.close()
+    return rich_text
+
+
+def strip_md_header_and_links(md):
+    """strip markdown headers and links from markdown text md
+
+    Args:
+        md: str, markdown text
+
+    Returns:
+        str with markdown headers and links removed
+
+    Note: This uses a very basic regex that likely fails on all sorts of edge cases
+    but works for the links in the docs
+    """
+    links = r"(?:[*#])|\[(.*?)\]\(.+?\)"
+
+    def subfn(match):
+        return match.group(1)
+
+    return re.sub(links, subfn, md)
+
+
+def strip_md_links(md):
+    """strip markdown links from markdown text md
+
+    Args:
+        md: str, markdown text
+
+    Returns:
+        str with markdown links removed
+
+    Note: This uses a very basic regex that likely fails on all sorts of edge cases
+    but works for the links in the osxphotos docs
+    """
+    links = r"\[(.*?)\]\(.+?\)"
+
+    def subfn(match):
+        return match.group(1)
+
+    return re.sub(links, subfn, md)
+
+
+def strip_html_comments(text):
+    """Strip html comments from text (which doesn't need to be valid HTML)"""
+    return re.sub(r"<!--(.|\s|\n)*?-->", "", text)
+
+
+def format_markdown_str(string, width=78):
+    """Return formatted markdown str for terminal"""
+    sio = io.StringIO()
+    console = Console(file=sio, force_terminal=True, width=width)
+    console.print(Markdown(string))
+    help_str = sio.getvalue()
+    sio.close()
+    return help_str
 
 
 def main():

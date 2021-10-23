@@ -3,7 +3,7 @@
 import grp
 import os
 import pwd
-from typing import Dict, List, Optional
+from typing import Iterable, List, Optional
 
 from autofile import hookimpl
 from autofile.renderoptions import RenderOptions
@@ -18,8 +18,9 @@ FIELDS = {
 
 
 @hookimpl
-def get_template_help() -> Dict:
-    return FIELDS
+def get_template_help() -> Iterable:
+    pass
+    # return [FIELDS]
 
 
 @hookimpl

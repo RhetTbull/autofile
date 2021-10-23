@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import List, Optional, Iterable
 
 from pluggy import HookimplMarker, HookspecMarker
 
@@ -17,7 +17,11 @@ def get_template_value(
 
     Return: None if field is not handled by this plugin otherwise list of str values"""
 
+    # return value of None means that field is not handled by this plugin
+    # return value of [None] means that field is handled by this plugin but value resolved to None (no value)
+    # return value of [value] means that field is handled by this plugin and value resolved to value
+
 
 @hookspec
-def get_template_help() -> Dict:
-    """Return dictionary of {field: help}"""
+def get_template_help() -> Iterable:
+    """Return iterable of one or more help elements. Each element may be a str, a dict, or a list of lists"""

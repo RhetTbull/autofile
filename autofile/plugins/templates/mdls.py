@@ -3,7 +3,7 @@
 import datetime
 import plistlib
 import subprocess
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional
 
 from autofile import hookimpl
 from autofile.datetime_utils import datetime_naive_to_utc
@@ -17,8 +17,9 @@ CACHED_MDLS_DATA = {}
 
 
 @hookimpl
-def get_template_help() -> Dict:
-    return FIELDS
+def get_template_help() -> Iterable:
+    pass
+    # return [FIELDS]
 
 
 @hookimpl

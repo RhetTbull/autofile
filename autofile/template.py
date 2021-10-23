@@ -1,31 +1,44 @@
 """ Custom template system for autofile """
 
-import datetime
 import importlib
 import locale
 import pathlib
 import shlex
-from dataclasses import dataclass
-from typing import List, Optional, Tuple, Union
+from textwrap import dedent
+from typing import Dict, List, Optional, Tuple, Union
 
 import pluggy
 from textx import TextXSyntaxError, metamodel_from_file
 
 from . import hookspecs
 from ._version import __version__
-from .constants import APP_NAME, INPLACE_DEFAULT, NONE_STR_SENTINEL
-from .datetime_formatter import DateTimeFormatter
-from .exiftool import ExifTool, ExifToolCaching
+from .constants import APP_NAME
 from .path_utils import sanitize_dirname, sanitize_filename, sanitize_pathpart
 from .renderoptions import RenderOptions
 
+
+class UnknownFieldError(Exception):
+    """Raised when a field is not known"""
+
+    pass
+
+
+class SyntaxError(Exception):
+    """Raised when template engine cannot parse the template string"""
+
+    pass
+
+
 DEFAULT_PLUGINS = (
     "autofile.plugins.templates.punctuation",
-    "autofile.plugins.templates.filepath",
-    "autofile.plugins.templates.filestat",
-    "autofile.plugins.templates.filedates",
+    "autofile.plugins.templates.exiftool",
+    "autofile.plugins.templates.audio",
     "autofile.plugins.templates.uti",
     "autofile.plugins.templates.mdls",
+    "autofile.plugins.templates.strip",
+    "autofile.plugins.templates.filepath",
+    "autofile.plugins.templates.filedates",
+    "autofile.plugins.templates.filestat",
 )
 
 
@@ -44,10 +57,8 @@ for plugin in DEFAULT_PLUGINS:
     mod = importlib.import_module(plugin)
     PM.register(mod, plugin)
 
-help_text = PM.hook.get_template_help()
-print(f"{help_text=}")
+# help_text = PM.hook.get_template_help()
 
-# from .text_detection import detect_text
 # from .utils import expand_and_validate_filepath, load_function
 
 # ensure locale set to user's locale
@@ -56,94 +67,15 @@ locale.setlocale(locale.LC_ALL, "")
 OTL_GRAMMAR_MODEL = str(pathlib.Path(__file__).parent / "template.tx")
 """TextX metamodel for template language """
 
-
-# Permitted substitutions (each of these returns a single value or None)
-# TEMPLATE_SUBSTITUTIONS = {
-#     "{created}": "Photo's creation date if set in the EXIF data, otherwise null; ISO 8601 format",
-#     "{created.date}": "Photo's creation date in ISO format, e.g. '2020-03-22'",
-#     "{created.year}": "4-digit year of photo creation time",
-#     "{created.yy}": "2-digit year of photo creation time",
-#     "{created.mm}": "2-digit month of the photo creation time (zero padded)",
-#     "{created.month}": "Month name in user's locale of the photo creation time",
-#     "{created.mon}": "Month abbreviation in the user's locale of the photo creation time",
-#     "{created.dd}": "2-digit day of the month (zero padded) of photo creation time",
-#     "{created.dow}": "Day of week in user's locale of the photo creation time",
-#     "{created.doy}": "3-digit day of year (e.g Julian day) of photo creation time, starting from 1 (zero padded)",
-#     "{created.hour}": "2-digit hour of the photo creation time",
-#     "{created.min}": "2-digit minute of the photo creation time",
-#     "{created.sec}": "2-digit second of the photo creation time",
-#     "{created.strftime}": "Apply strftime template to file creation date/time. Should be used in form "
-#     + "{created.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
-#     + "{created.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
-#     + "If used with no template will return null value. "
-#     + "See https://strftime.org/ for help on strftime templates.",
-#     "{modified}": "Photo's modification date if set in the EXIF data, otherwise null; ISO 8601 format",
-#     "{modified.date}": "Photo's modification date in ISO format, e.g. '2020-03-22'; uses creation date if photo is not modified",
-#     "{modified.year}": "4-digit year of photo modification time; uses creation date if photo is not modified",
-#     "{modified.yy}": "2-digit year of photo modification time; uses creation date if photo is not modified",
-#     "{modified.mm}": "2-digit month of the photo modification time (zero padded); uses creation date if photo is not modified",
-#     "{modified.month}": "Month name in user's locale of the photo modification time; uses creation date if photo is not modified",
-#     "{modified.mon}": "Month abbreviation in the user's locale of the photo modification time; uses creation date if photo is not modified",
-#     "{modified.dd}": "2-digit day of the month (zero padded) of the photo modification time; uses creation date if photo is not modified",
-#     "{modified.dow}": "Day of week in user's locale of the photo modification time; uses creation date if photo is not modified",
-#     "{modified.doy}": "3-digit day of year (e.g Julian day) of photo modification time, starting from 1 (zero padded); uses creation date if photo is not modified",
-#     "{modified.hour}": "2-digit hour of the photo modification time; uses creation date if photo is not modified",
-#     "{modified.min}": "2-digit minute of the photo modification time; uses creation date if photo is not modified",
-#     "{modified.sec}": "2-digit second of the photo modification time; uses creation date if photo is not modified",
-#     "{modified.strftime}": "Apply strftime template to file modification date/time. Should be used in form "
-#     + "{modified.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
-#     + "{modified.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
-#     + "If used with no template will return null value. Uses creation date if photo is not modified. "
-#     + "See https://strftime.org/ for help on strftime templates.",
-#     "{today.date}": "Current date in iso format, e.g. '2020-03-22'",
-#     "{today.year}": "4-digit year of current date",
-#     "{today.yy}": "2-digit year of current date",
-#     "{today.mm}": "2-digit month of the current date (zero padded)",
-#     "{today.month}": "Month name in user's locale of the current date",
-#     "{today.mon}": "Month abbreviation in the user's locale of the current date",
-#     "{today.dd}": "2-digit day of the month (zero padded) of current date",
-#     "{today.dow}": "Day of week in user's locale of the current date",
-#     "{today.doy}": "3-digit day of year (e.g Julian day) of current date, starting from 1 (zero padded)",
-#     "{today.hour}": "2-digit hour of the current date",
-#     "{today.min}": "2-digit minute of the current date",
-#     "{today.sec}": "2-digit second of the current date",
-#     "{today.strftime}": "Apply strftime template to current date/time. Should be used in form "
-#     + "{today.strftime,TEMPLATE} where TEMPLATE is a valid strftime template, e.g. "
-#     + "{today.strftime,%Y-%U} would result in year-week number of year: '2020-23'. "
-#     + "If used with no template will return null value. "
-#     + "See https://strftime.org/ for help on strftime templates.",
-#     # "{osxphotos_version}": f"The osxphotos version, e.g. '{__version__}'",
-#     # "{osxphotos_cmd_line}": "The full command line used to run osxphotos",
-# }
-
-# TEMPLATE_SUBSTITUTIONS_PATHLIB = {
-#     # "{export_dir}": "The full path to the export directory",
-#     "{filepath}": "The full path to the file being processed.",
-# }
-
 # # Permitted multi-value substitutions (each of these returns None or 1 or more values)
 # TEMPLATE_SUBSTITUTIONS_MULTI_VALUED = {
-#     "{GROUP}": "The tag group (as defined by exiftool) for the tag being processed, for example, 'EXIF'; for use with --tag-format.",
-#     "{TAG}": "The name of the tag being processed, for example, 'ImageDescription'; for use with --tag-format.",
-#     "{VALUE}": "The value of the tag being processed, for example, 'My Image Description'; for use with --tag-format.",
 #     # "{shell_quote}": "Use in form '{shell_quote,TEMPLATE}'; quotes the rendered TEMPLATE value(s) for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
-#     "{strip}": "Use in form '{strip,TEMPLATE}'; strips whitespace from begining and end of rendered TEMPLATE value(s).",
 #     # "{function}": "Execute a python function from an external file and use return value as template substitution. "
 #     # + "Use in format: {function:file.py::function_name} where 'file.py' is the name of the python file and 'function_name' is the name of the function to call. "
 #     # + "The function will be passed the PhotoInfo object for the photo. "
 #     # + "See https://github.com/RhetTbull/osxphotos/blob/master/examples/template_function.py for an example of how to implement a template function.",
 # }
 
-# TEMPLATE_SUBSTITUTIONS_EXIFTOOL = {
-#     "{Group:Tag}": "Any valid exiftool tag with optional group name, e.g. '{EXIF:Make}', '{Make}', '{IPTC:Keywords}', '{ISO}'; invalid or missing tags will be ignored."
-# }
-
-# TEMPLATE_SUBSTITUTIONS_ALL = {
-#     **TEMPLATE_SUBSTITUTIONS_EXIFTOOL,
-#     **TEMPLATE_SUBSTITUTIONS_MULTI_VALUED,
-#     **TEMPLATE_SUBSTITUTIONS_PATHLIB,
-#     **TEMPLATE_SUBSTITUTIONS,
-# }
 
 FILTER_VALUES = {
     "lower": "Convert value to lower case, e.g. 'Value' => 'value'.",
@@ -154,27 +86,9 @@ FILTER_VALUES = {
     "braces": "Enclose value in curly braces, e.g. 'value => '{value}'.",
     "parens": "Enclose value in parentheses, e.g. 'value' => '(value')",
     "brackets": "Enclose value in brackets, e.g. 'value' => '[value]'",
-    # "shell_quote": "Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
+    "shell_quote": "Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
     # "function": "Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxphotos/blob/master/examples/template_filter.py",
 }
-
-# Just the substitutions without the braces
-# SINGLE_VALUE_SUBSTITUTIONS = [
-#     field.replace("{", "").replace("}", "") for field in TEMPLATE_SUBSTITUTIONS
-# ]
-
-# PATHLIB_SUBSTITUTIONS = [
-#     field.replace("{", "").replace("}", "") for field in TEMPLATE_SUBSTITUTIONS_PATHLIB
-# ]
-
-# MULTI_VALUE_SUBSTITUTIONS = [
-#     field.replace("{", "").replace("}", "")
-#     for field in TEMPLATE_SUBSTITUTIONS_MULTI_VALUED
-# ]
-
-# FIELD_NAMES = (
-#     SINGLE_VALUE_SUBSTITUTIONS + MULTI_VALUE_SUBSTITUTIONS + PATHLIB_SUBSTITUTIONS
-# )
 
 # PATH_SEP_DEFAULT = os.path.sep
 
@@ -212,16 +126,13 @@ class FileTemplateParser:
 class FileTemplate:
     """FileTemplate class to render a template string from a PhotoInfo object"""
 
-    def __init__(self, filepath: str, exiftool_path: Optional[str] = None):
+    def __init__(self, filepath: str):
         """Inits FileTemplate class with filepath and exiftool_path"""
 
         if not pathlib.Path(filepath).exists():
             raise FileNotFoundError(f"File {filepath} does not exist")
-        if exiftool_path and not pathlib.Path(exiftool_path).exists():
-            raise FileNotFoundError(f"Exiftool path {exiftool_path} does not exist")
 
         self.filepath = filepath
-        self.exiftool_path = exiftool_path
         self.hook = PM.hook
 
         # get parser singleton
@@ -241,7 +152,6 @@ class FileTemplate:
         self.strip = options.strip
         self.quote = options.quote
         self.dest_path = options.dest_path
-        self.exiftool = None
         # self.exiftool = options.exiftool or ExifToolCaching(
         #     self.filepath, exiftool=self.exiftool_path
         # )
@@ -266,7 +176,6 @@ class FileTemplate:
 
         self.options = options
         self.tag = options.tag
-        self.group, self.tagname = split_group_tag(self.tag) if self.tag else ("", "")
         self.inplace_sep = options.inplace_sep
         self.none_str = options.none_str
         self.expand_inplace = options.expand_inplace
@@ -276,12 +185,11 @@ class FileTemplate:
         self.dest_path = options.dest_path
         self.quote = options.quote
         self.dest_path = options.dest_path
-        self.exiftool = None
 
         try:
             model = self.parser.parse(template)
         except TextXSyntaxError as e:
-            raise ValueError(f"SyntaxError: {e}")
+            raise SyntaxError(e)
 
         if not model:
             # empty string
@@ -330,11 +238,6 @@ class FileTemplate:
         if ts.template:
             # have a template field to process
             field = ts.template.field
-            field_part = field.split(".")[0]
-            # if field not in FIELD_NAMES and field_part not in FIELD_NAMES:
-            #     unmatched.append(field)
-            #     return [], unmatched
-
             subfield = ts.template.subfield
 
             # process filters
@@ -405,7 +308,8 @@ class FileTemplate:
             # #     vals = self.get_template_value_function(
             # #         subfield,
             # #     )
-            # try plugins
+
+            # pass processing to plugins to get values
             vals = self.hook.get_template_value(
                 filepath=self.filepath,
                 field=field,
@@ -413,16 +317,15 @@ class FileTemplate:
                 default=default,
                 options=self.options,
             )
-            # ZZZ TODO: handle dir/filename sanitization here
-            # also handle unhandled values
-            if vals is None:
-                print(f"Error: unhandled field: {field}")
 
-            if not vals:
-                vals = [None]
-                # assume it's an exif field in form "tag" or "group:tag"
-                # exiftag = f"{field}:{subfield}" if subfield else f"{field}"
-                # vals = self.get_template_value_exiftool(tag=exiftag)
+            if vals:
+                if self.filename:
+                    vals = [sanitize_pathpart(v) for v in vals]
+                elif self.dirname:
+                    vals = [sanitize_dirname(v) for v in vals]
+
+            if vals is None:
+                raise UnknownFieldError(f"Unknown template field: {field}")
 
             vals = [val for val in vals if val is not None]
 
@@ -541,201 +444,6 @@ class FileTemplate:
 
         return results, unmatched
 
-    def get_template_value(
-        self,
-        field,
-        default,
-        subfield=None,
-    ):
-        """lookup value for template field (single-value template substitutions)
-
-        Args:
-            field: template field to find value for.
-            default: the default value provided by the user
-            subfield: subfield (value after : in field)
-
-        Returns:
-            The matching template value (which may be None).
-
-        Raises:
-            ValueError if no rule exists for field.
-        """
-        return [None]
-        # initialize today with current date/time if needed
-        if self.today is None:
-            self.today = datetime.datetime.now()
-        created = self.get_created_date()
-        modified = self.get_modified_date()
-
-        value = None
-
-        # wouldn't a switch/case statement be nice...
-        if field == "created":
-            value = created.isoformat() if created else None
-        elif field == "created.date":
-            value = DateTimeFormatter(created).date if created else None
-        elif field == "created.year":
-            value = DateTimeFormatter(created).year if created else None
-        elif field == "created.yy":
-            value = DateTimeFormatter(created).yy if created else None
-        elif field == "created.mm":
-            value = DateTimeFormatter(created).mm if created else None
-        elif field == "created.month":
-            value = DateTimeFormatter(created).month if created else None
-        elif field == "created.mon":
-            value = DateTimeFormatter(created).mon if created else None
-        elif field == "created.dd":
-            value = DateTimeFormatter(created).dd if created else None
-        elif field == "created.dow":
-            value = DateTimeFormatter(created).dow if created else None
-        elif field == "created.doy":
-            value = DateTimeFormatter(created).doy if created else None
-        elif field == "created.hour":
-            value = DateTimeFormatter(created).hour if created else None
-        elif field == "created.min":
-            value = DateTimeFormatter(created).min if created else None
-        elif field == "created.sec":
-            value = DateTimeFormatter(created).sec if created else None
-        elif field == "created.strftime":
-            if default:
-                try:
-                    value = created.strftime(default[0]) if created else None
-                except:
-                    raise ValueError(f"Invalid strftime template: '{default}'")
-            else:
-                value = None
-        elif field == "modified":
-            value = modified.isoformat() if modified else None
-        elif field == "modified.date":
-            value = (
-                DateTimeFormatter(modified).date
-                if modified
-                else DateTimeFormatter(modified).date
-            )
-        elif field == "modified.year":
-            value = (
-                DateTimeFormatter(modified).year
-                if modified
-                else DateTimeFormatter(modified).year
-            )
-        elif field == "modified.yy":
-            value = (
-                DateTimeFormatter(modified).yy
-                if modified
-                else DateTimeFormatter(modified).yy
-            )
-        elif field == "modified.mm":
-            value = (
-                DateTimeFormatter(modified).mm
-                if modified
-                else DateTimeFormatter(modified).mm
-            )
-        elif field == "modified.month":
-            value = (
-                DateTimeFormatter(modified).month
-                if modified
-                else DateTimeFormatter(modified).month
-            )
-        elif field == "modified.mon":
-            value = (
-                DateTimeFormatter(modified).mon
-                if modified
-                else DateTimeFormatter(modified).mon
-            )
-        elif field == "modified.dd":
-            value = (
-                DateTimeFormatter(modified).dd
-                if modified
-                else DateTimeFormatter(modified).dd
-            )
-        elif field == "modified.dow":
-            value = (
-                DateTimeFormatter(modified).dow
-                if modified
-                else DateTimeFormatter(modified).dow
-            )
-        elif field == "modified.doy":
-            value = (
-                DateTimeFormatter(modified).doy
-                if modified
-                else DateTimeFormatter(modified).doy
-            )
-        elif field == "modified.hour":
-            value = (
-                DateTimeFormatter(modified).hour
-                if modified
-                else DateTimeFormatter(modified).hour
-            )
-        elif field == "modified.min":
-            value = (
-                DateTimeFormatter(modified).min
-                if modified
-                else DateTimeFormatter(modified).min
-            )
-        elif field == "modified.sec":
-            value = (
-                DateTimeFormatter(modified).sec
-                if modified
-                else DateTimeFormatter(modified).sec
-            )
-        elif field == "modified.strftime":
-            if default:
-                try:
-                    value = modified.strftime(default[0]) if modified else None
-                except:
-                    raise ValueError(f"Invalid strftime template: '{default}'")
-            else:
-                value = None
-        elif field == "today.date":
-            value = DateTimeFormatter(self.today).date
-        elif field == "today.year":
-            value = DateTimeFormatter(self.today).year
-        elif field == "today.yy":
-            value = DateTimeFormatter(self.today).yy
-        elif field == "today.mm":
-            value = DateTimeFormatter(self.today).mm
-        elif field == "today.month":
-            value = DateTimeFormatter(self.today).month
-        elif field == "today.mon":
-            value = DateTimeFormatter(self.today).mon
-        elif field == "today.dd":
-            value = DateTimeFormatter(self.today).dd
-        elif field == "today.dow":
-            value = DateTimeFormatter(self.today).dow
-        elif field == "today.doy":
-            value = DateTimeFormatter(self.today).doy
-        elif field == "today.hour":
-            value = DateTimeFormatter(self.today).hour
-        elif field == "today.min":
-            value = DateTimeFormatter(self.today).min
-        elif field == "today.sec":
-            value = DateTimeFormatter(self.today).sec
-        elif field == "today.strftime":
-            if default:
-                try:
-                    value = self.today.strftime(default[0])
-                except:
-                    raise ValueError(f"Invalid strftime template: '{default}'")
-            else:
-                value = None
-        # elif field == "osxphotos_version":
-        #     value = __version__
-        # elif field == "osxphotos_cmd_line":
-        # value = " ".join(sys.argv)
-        else:
-            # if here, didn't get a match
-            raise ValueError(f"Unhandled template value: {field}")
-
-        if self.filename:
-            value = sanitize_pathpart(value)
-        elif self.dirname:
-            value = sanitize_dirname(value)
-
-        # ensure no empty strings in value (see #512)
-        value = None if value == "" else value
-
-        return [value]
-
     def get_template_value_filter(self, filter_, values):
         if filter_ == "lower":
             if values and type(values) == list:
@@ -788,315 +496,110 @@ class FileTemplate:
             raise ValueError(f"Unhandled filter: {filter_}")
         return value
 
-    def get_template_value_multi(self, field, subfield, default):
-        """lookup value for template field (multi-value template substitutions)
 
-        Args:
-            field: template field to find value for.
-            subfield: the template subfield value
-            default: value of default field
-
-        Returns:
-            List of the matching template values or [].
-
-        Raises:
-            ValueError if no rule exists for field.
-        """
-
-        """ return list of values for a multi-valued template field """
-
-        values = []
-        if field == "GROUP":
-            values = [self.group]
-        elif field == "TAG":
-            values = [self.tagname]
-        elif field == "VALUE":
-            values = self.get_template_value_exiftool(self.tag)
-        elif field == "shell_quote":
-            values = [shlex.quote(v) for v in default if v]
-        elif field == "strip":
-            values = [v.strip() for v in default]
-        else:
-            raise ValueError(f"Unhandled template value: {field}")
-
-        # sanitize directory names if needed, folder_album handled differently above
-        if self.filename:
-            values = [sanitize_pathpart(value) for value in values]
-        elif self.dirname and field != "folder_album":
-            # skip folder_album because it would have been handled above
-            values = [sanitize_dirname(value) for value in values]
-
-        # If no values, insert None so code below will substitute none_str for None
-        values = values or []
-        return values
-
-    def get_template_value_exiftool(
-        self,
-        tag,
-        default=None,
-    ):
-        """Get template value for format "{EXIF:Model}" """
-
-        exifdict = self.exiftool.asdict(normalized=True)
-        exifdict_no_groups = self.exiftool.asdict(tag_groups=False, normalized=True)
-        exifdict = exifdict.copy()
-        exifdict.update(exifdict_no_groups)
-
-        tag = tag.lower()
-        tag_subfield = None
-        if "." in tag:
-            tag, tag_subfield = tag.split(".")
-
-        values = []
-        if tag in exifdict:
-            values = exifdict[tag]
-            values = [values] if not isinstance(values, list) else values
-            values = [str(v) for v in values]
-
-            # "(Binary data " below is hack workaround for "(Binary data 0 bytes, use -b option to extract)" error that happens
-            # when exporting video with keywords on Photos 5.0 / Catalina
-            values = [v for v in values if not v.startswith("(Binary data ")]
-
-            if tag_subfield:
-                # handle datetime formatting
-                if tag_subfield not in DATETIME_SUBFIELDS:
-                    raise ValueError(
-                        f"Invalid value {tag_subfield} for date/time formatter"
-                    )
-
-                values = [
-                    getattr(
-                        DateTimeFormatter(datetime.datetime.fromisoformat(v)),
-                        tag_subfield,
-                    )
-                    for v in values
-                ]
-
-            # sanitize directory names if needed
-            if self.filename:
-                values = [sanitize_pathpart(value) for value in values]
-            elif self.dirname:
-                values = [sanitize_dirname(value) for value in values]
-
-        return values
-
-    def get_created_date(self):
-        """Get created date from EXIF data or None"""
-
-        data = self.exiftool.asdict()
-        for tag in [
-            "Composite:SubSecDateTimeOriginal",
-            "Composite:DateTimeCreated",
-            "QuickTime:CreationDate",
-            "QuickTime:CreateDate",
-            "EXIF:DateTimeOriginal",
-            "EXIF:CreateDate",
-            "IPTC:DateCreated",
-        ]:
-            if tag in data:
-                return exiftool_date_to_datetime(data[tag])
-        else:
-            return None
-
-    def get_modified_date(self):
-        """Get modified date from EXIF data or None"""
-
-        data = self.exiftool.asdict()
-        for tag in [
-            "Composite:SubSecModifyDate",
-            "EXIF:ModifyDate",
-            "QuickTime:ModifyDate",
-        ]:
-            if tag in data:
-                return exiftool_date_to_datetime(data[tag])
-        else:
-            return None
-
-    # def get_template_value_function(
-    #     self,
-    #     subfield,
-    # ):
-    #     """Get template value from external function"""
-
-    #     if "::" not in subfield:
-    #         raise ValueError(
-    #             f"SyntaxError: could not parse function name from '{subfield}'"
-    #         )
-
-    #     filename, funcname = subfield.split("::")
-
-    #     filename_validated = expand_and_validate_filepath(filename)
-    #     if not filename_validated:
-    #         raise ValueError(f"'{filename}' does not appear to be a file")
-
-    #     template_func = load_function(filename_validated, funcname)
-    #     values = template_func(self.photo, options=self.options)
-
-    #     if not isinstance(values, (str, list)):
-    #         raise TypeError(
-    #             f"Invalid return type for function {funcname}: expected str or list"
-    #         )
-    #     if type(values) == str:
-    #         values = [values]
-
-    #     # sanitize directory names if needed
-    #     if self.filename:
-    #         values = [sanitize_pathpart(value) for value in values]
-    #     elif self.dirname:
-    #         # sanitize but don't replace any "/" as user function may want to create sub directories
-    #         values = [sanitize_dirname(value, replacement=None) for value in values]
-
-    #     return values
-
-    # def get_template_value_filter_function(self, filter_, values):
-    #     """Filter template value from external function"""
-
-    #     filter_ = filter_.replace("function:", "")
-
-    #     if "::" not in filter_:
-    #         raise ValueError(
-    #             f"SyntaxError: could not parse function name from '{filter_}'"
-    #         )
-
-    #     filename, funcname = filter_.split("::")
-
-    #     filename_validated = expand_and_validate_filepath(filename)
-    #     if not filename_validated:
-    #         raise ValueError(f"'{filename}' does not appear to be a file")
-
-    #     template_func = load_function(filename_validated, funcname)
-
-    #     if not isinstance(values, (list, tuple)):
-    #         values = [values]
-    #     values = template_func(values)
-
-    #     if not isinstance(values, list):
-    #         raise TypeError(
-    #             f"Invalid return type for function {funcname}: expected list"
-    #         )
-
-    #     return values
-
-    # def get_photo_video_type(self, default):
-    #     """return media type, e.g. photo or video"""
-    #     default_dict = parse_default_kv(default, PHOTO_VIDEO_TYPE_DEFAULTS)
-    #     if self.photo.isphoto:
-    #         return default_dict["photo"]
-    #     else:
-    #         return default_dict["video"]
-
-    # def get_media_type(self, default):
-    #     """return special media type, e.g. slow_mo, panorama, etc., defaults to photo or video if no special type"""
-    #     default_dict = parse_default_kv(default, MEDIA_TYPE_DEFAULTS)
-    #     p = self.photo
-    #     if p.selfie:
-    #         return default_dict["selfie"]
-    #     elif p.time_lapse:
-    #         return default_dict["time_lapse"]
-    #     elif p.panorama:
-    #         return default_dict["panorama"]
-    #     elif p.slow_mo:
-    #         return default_dict["slow_mo"]
-    #     elif p.screenshot:
-    #         return default_dict["screenshot"]
-    #     elif p.portrait:
-    #         return default_dict["portrait"]
-    #     elif p.live_photo:
-    #         return default_dict["live_photo"]
-    #     elif p.burst:
-    #         return default_dict["burst"]
-    #     elif p.ismovie:
-    #         return default_dict["video"]
-    #     else:
-    #         return default_dict["photo"]
-
-    # def get_photo_bool_attribute(self, attr, default, bool_val):
-    #     # get value for a PhotoInfo bool attribute
-    #     val = getattr(self.photo, attr)
-    #     if val:
-    #         return bool_val
-    #     else:
-    #         return default
-
-
-def split_group_tag(exiftag: str) -> Tuple[str, str]:
-    """split the group and tag from an exiftool tag in format Group:Tag or Tag"""
-    if ":" not in exiftag:
-        return "", exiftag
-
-    group, tag = exiftag.split(":", 1)
-    return group, tag
-
-
-def parse_default_kv(default, default_dict):
-    """parse a string in form key1=value1;key2=value2,... as used for some template fields
-
-    Args:
-        default: str, in form 'photo=foto;video=vidéo'
-        default_dict: dict, in form {"photo": "fotos", "video": "vidéos"} with default values
-
-    Returns:
-        dict in form {"photo": "fotos", "video": "vidéos"}
-    """
-
-    default_dict_ = default_dict.copy()
-    if default:
-        defaults = default[0].split(";")
-        for kv in defaults:
-            try:
-                k, v = kv.split("=")
-                k = k.strip()
-                v = v.strip()
-                default_dict_[k] = v
-            except ValueError:
-                pass
-    return default_dict_
-
-
-def get_template_help():
-    """Return help for template system as markdown string"""
+def get_template_help() -> List[Union[str, List]]:
+    """Return help for template system as list of markdown strings or lists of lists"""
     # TODO: would be better to use importlib.abc.ResourceReader but I can't find a single example of how to do this
-    help_file = pathlib.Path(__file__).parent / "phototemplate.md"
+    help_file = pathlib.Path(__file__).parent / "template.md"
     with open(help_file, "r") as fd:
-        md = fd.read()
+        md = [fd.read()]
+
+    # process help from plugins
+    help_texts = PM.hook.get_template_help()
+    for help_text in help_texts:
+        # help_text is an iterable of str, dicts, or lists or lists
+        for item in help_text:
+            if type(item) == str:
+                # format str as it might be a docstring
+                md.append("\n" + dedent(item).strip())
+            elif isinstance(item, (list, tuple)):
+                md.append(item)
+            else:
+                raise ValueError(f"Unhandled help item: {item}")
     return md
 
 
-def format_str_value(value, format_str):
-    """Format value based on format code in field in format id:02d"""
-    if not format_str:
-        return str(value)
-    format_str = "{0:" + f"{format_str}" + "}"
-    return format_str.format(value)
+# def lol_to_md_table(lol: List[List]) -> str:
+#     """Convert a dict to a markdown table; assumes each list is the same length"""
+#     if not lol:
+#         return ""
+#
+#     markdowntable = ""
+#     # Make a string of all the keys in the first dict with pipes before after and between each key
+#     markdownheader = "| " + " | ".join(map(str, lol[0])) + " |"
+#     # Make a header separator line with dashes instead of key names
+#     markdownheaderseparator = "|-----" * len(lol[0]) + "|"
+#     # Add the header row and separator to the table
+#     markdowntable += markdownheader + "\n"
+#     markdowntable += markdownheaderseparator + "\n"
+#     # Loop through the list of lists outputting the rows
+#     for row in lol[1:]:
+#         markdownrow = "".join("| " + str(col) + " " for col in row)
+#         markdowntable += markdownrow + "|" + "\n"
+#     print(f"{markdowntable=}")
+#     return markdowntable
+#
+# def get_template_value_function(
+#     self,
+#     subfield,
+# ):
+#     """Get template value from external function"""
 
+#     if "::" not in subfield:
+#         raise ValueError(
+#             f"SyntaxError: could not parse function name from '{subfield}'"
+#         )
 
-def exiftool_date_to_datetime(date: str) -> datetime.datetime:
-    """Convert EXIF date to datetime.datetime"""
+#     filename, funcname = subfield.split("::")
 
-    """ exiftool can produce date/times in a variety of formats:
-        with TZ offset: "2021:08:01 21:51:33-07:00",
-        no TZ offset: "2019:07:27 17:33:28",
-        no time: "2019:04:15",
-        subsecond, no TZ offset: "2019:04:15 14:40:24.86",
-        subsecond, TZ offset: "2019:04:15 14:40:24.86-04:00",
-  """
+#     filename_validated = expand_and_validate_filepath(filename)
+#     if not filename_validated:
+#         raise ValueError(f"'{filename}' does not appear to be a file")
 
-    date_time_formats = [
-        "%Y:%m:%d %H:%M:%S%z",
-        "%Y:%m:%d %H:%M:%S",
-        "%Y:%m:%d %H:%M:%S.%f",
-        "%Y:%m:%d %H:%M:%S.%f%z",
-        "%Y:%m:%d",
-    ]
+#     template_func = load_function(filename_validated, funcname)
+#     values = template_func(self.photo, options=self.options)
 
-    for dt_format in date_time_formats:
-        try:
-            parsed_date = datetime.datetime.strptime(date, dt_format)
-        except ValueError as e:
-            pass
-        else:
-            return parsed_date
-    else:
-        raise ValueError(
-            f"Could not parse date format: {date} does not match {date_time_formats}"
-        )
+#     if not isinstance(values, (str, list)):
+#         raise TypeError(
+#             f"Invalid return type for function {funcname}: expected str or list"
+#         )
+#     if type(values) == str:
+#         values = [values]
+
+#     # sanitize directory names if needed
+#     if self.filename:
+#         values = [sanitize_pathpart(value) for value in values]
+#     elif self.dirname:
+#         # sanitize but don't replace any "/" as user function may want to create sub directories
+#         values = [sanitize_dirname(value, replacement=None) for value in values]
+
+#     return values
+
+# def get_template_value_filter_function(self, filter_, values):
+#     """Filter template value from external function"""
+
+#     filter_ = filter_.replace("function:", "")
+
+#     if "::" not in filter_:
+#         raise ValueError(
+#             f"SyntaxError: could not parse function name from '{filter_}'"
+#         )
+
+#     filename, funcname = filter_.split("::")
+
+#     filename_validated = expand_and_validate_filepath(filename)
+#     if not filename_validated:
+#         raise ValueError(f"'{filename}' does not appear to be a file")
+
+#     template_func = load_function(filename_validated, funcname)
+
+#     if not isinstance(values, (list, tuple)):
+#         values = [values]
+#     values = template_func(values)
+
+#     if not isinstance(values, list):
+#         raise TypeError(
+#             f"Invalid return type for function {funcname}: expected list"
+#         )
+
+#     return values

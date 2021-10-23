@@ -2,7 +2,7 @@
 
 import datetime
 import os
-from typing import Dict, List, Optional
+from typing import Iterable, List, Optional
 
 from autofile import hookimpl
 from autofile.datetime_formatter import DateTimeFormatter
@@ -14,7 +14,7 @@ FIELDS = {
     "{accessed}": "File last accessed date/time",
 }
 
-DATE_TIME_ATTRIBUTES = {
+DATETIME_ATTRIBUTES = {
     "date": "ISO date, e.g. 2020-03-22",
     "year": "4-digit year, e.g. 2021",
     "yy": "2-digit year, e.g. 21",
@@ -36,8 +36,20 @@ DATE_TIME_ATTRIBUTES = {
 
 
 @hookimpl
-def get_template_help() -> Dict:
-    return FIELDS
+def get_template_help() -> Iterable:
+    text = """
+    Date/time fields may be formatted using attributes which are appended to the field name following a `.` (period). 
+    For example, `{created.month}` resolves to the month name of the file's creation date in the user's locale, e.g. `December`. 
+
+    The following attributes are available:
+    
+    """
+    fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
+    attributes = [
+        ["Attribute", "Description"],
+        *[[k, v] for k, v in DATETIME_ATTRIBUTES.items()],
+    ]
+    return ["**Date/Time Fields**", fields, text, attributes]
 
 
 @hookimpl
@@ -71,7 +83,7 @@ def get_template_value(
         return [dt.isoformat()]
 
     subfield = field[1]
-    if subfield not in DATE_TIME_ATTRIBUTES:
+    if subfield not in DATETIME_ATTRIBUTES:
         raise ValueError(f"Unknown subfield {subfield}")
 
     if subfield == "strftime":

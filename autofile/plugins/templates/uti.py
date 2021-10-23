@@ -21,7 +21,7 @@ import pathlib
 import re
 import subprocess
 import tempfile
-from typing import Dict, List, Optional
+from typing import Iterable, List, Optional
 
 import CoreServices
 import objc
@@ -36,8 +36,9 @@ FIELDS = {
 
 
 @hookimpl
-def get_template_help() -> Dict:
-    return FIELDS
+def get_template_help() -> Iterable:
+    pass
+    # return [FIELDS]
 
 
 @hookimpl

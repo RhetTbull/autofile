@@ -17,13 +17,18 @@ def noop(*args, **kwargs):
 
 
 def red(msg: str) -> str:
-    """Return red string in rich markdown"""
+    """Return red string in rich markup"""
     return f"[red]{msg}[/red]"
 
 
 def green(msg: str) -> str:
-    """Return green string in rich markdown"""
+    """Return green string in rich markup"""
     return f"[green]{msg}[/green]"
+
+
+def bold(msg: str) -> str:
+    """Return bold string in rich markup"""
+    return f"[bold]{msg}[/bold]"
 
 
 def get_os_version():

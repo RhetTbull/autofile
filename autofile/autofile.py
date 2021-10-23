@@ -6,7 +6,7 @@ from typing import Callable, List, Optional
 
 from .constants import NONE_STR_SENTINEL
 from .renderoptions import RenderOptions
-from .template import FileTemplate
+from .template import FileTemplate, UnknownFieldError
 from .utils import noop
 
 
@@ -36,6 +36,7 @@ def filter_file(
             if results and all(NONE_STR_SENTINEL not in result for result in results):
                 filter_match = True
                 break
+                
 
     return (
         (glob_match if glob else True)
@@ -77,9 +78,15 @@ def process_files(
                 verbose(f"Skipping file {file}")
                 continue
             verbose(f"Processing file {file}")
-            options = RenderOptions()
-            template = FileTemplate(filename)
-            results, _ = template.render(directory_template, options=options)
-            print(results)
+            if directory_template:
+                rendered_directories, _ = FileTemplate(filename).render(
+                    directory_template, options=RenderOptions(dirname=True)
+                )
+                print(f"{rendered_directories=}")
+            if filename_template:
+                rendered_filenames, _ = FileTemplate(filename).render(
+                    filename_template, options=RenderOptions(filename=True)
+                )
+                print(f"{rendered_filenames=}")
             files_processed += 1
     return files_processed
