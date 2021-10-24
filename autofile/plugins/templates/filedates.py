@@ -38,7 +38,7 @@ DATETIME_ATTRIBUTES = {
 @hookimpl
 def get_template_help() -> Iterable:
     text = """
-    Date/time fields may be formatted using attributes which are appended to the field name following a `.` (period). 
+    Date/time fields may be formatted using "dot notation" attributes which are appended to the field name following a `.` (period). 
     For example, `{created.month}` resolves to the month name of the file's creation date in the user's locale, e.g. `December`. 
 
     The following attributes are available:
@@ -54,7 +54,7 @@ def get_template_help() -> Iterable:
 
 @hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: str, options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

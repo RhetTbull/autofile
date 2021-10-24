@@ -21,8 +21,9 @@ SUBFIELDS = {
 @hookimpl
 def get_template_help() -> Iterable:
     text = """
-    The `{filepath}` fields returns the full path to the file being processed. 
-    Various attributes of the path can be accessed using dot notation. For example, 
+    The `{filepath}` fields returns the full path to the source file being processed. 
+    Various attributes of the path can be accessed using "dot notation" (appended to the filepath field with a '.'). 
+    For example, 
     `{filepath.name}` returns just the name of the file without the full path. 
     `{filepath.parent}` returns the parent directory of the file.
     
@@ -45,7 +46,7 @@ def get_template_help() -> Iterable:
 
 @hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: str, options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
 ) -> Optional[List[Optional[str]]]:
     """lookup value for template pathlib template fields
 

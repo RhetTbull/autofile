@@ -42,13 +42,19 @@ FIELDS = {
 
 @hookimpl
 def get_template_help() -> Iterable:
-    pass
-    # return [FIELDS]
+    text = """
+    Within the template system, many punctuation characters have special meaning, e.g. `{}` indicates a template field 
+    and this means that some punctuation characters cannot be inserted into the template. 
+    Thus, if you want to insert punctuation into the rendered template value, you can use these punctuation fields to do so. 
+    For example, `{openbrace}value{closebrace}` will render to `{value}`.
+    """
+    fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
+    return ["**Punctuation Fields**", fields, text]
 
 
 @hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: str, options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
 ) -> Optional[List[Optional[str]]]:
     """Called by template.py to get template value for custom template"""
     value = PUNCTUATION.get(field)

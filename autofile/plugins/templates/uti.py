@@ -37,13 +37,17 @@ FIELDS = {
 
 @hookimpl
 def get_template_help() -> Iterable:
-    pass
-    # return [FIELDS]
+    text = """
+    The `{uti}` template returns the macOS Uniform Type Identifier (UTI) for the file. 
+    For example, `{uti}` for a file with extension .pdf would return `com.adobe.pdf`.
+    """
+    fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
+    return ["**Uniform Type Identifier (UTI) Fields**", fields, text]
 
 
 @hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: str, options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 
@@ -608,7 +612,7 @@ def get_preferred_uti_extension(uti):
             if extension:
                 return extension
 
-            # on MacOS 10.12, HEIC files are not supported and UTTypeCopyPreferredTagWithClass will return None for HEIC
+            # on macOS 10.12, HEIC files are not supported and UTTypeCopyPreferredTagWithClass will return None for HEIC
             if uti == "public.heic":
                 return "HEIC"
 
@@ -633,7 +637,7 @@ def get_uti_for_extension(extension):
             if uti:
                 return uti
 
-            # on MacOS 10.12, HEIC files are not supported and UTTypeCopyPreferredTagWithClass will return None for HEIC
+            # on macOS 10.12, HEIC files are not supported and UTTypeCopyPreferredTagWithClass will return None for HEIC
             if extension.lower() == "heic":
                 return "public.heic"
 

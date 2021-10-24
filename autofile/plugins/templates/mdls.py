@@ -10,7 +10,7 @@ from autofile.datetime_utils import datetime_naive_to_utc
 from autofile.renderoptions import RenderOptions
 
 FIELDS = {
-    "{mdls}": "Get metadata attributes for file as returned by mdls command",
+    "{mdls}": "Get metadata attributes for file as returned by mdls command; use in form '{mdls:ATTRIBUTE}', for example, '{mdls:kMDItemContentType}'",
 }
 
 CACHED_MDLS_DATA = {}
@@ -18,13 +18,18 @@ CACHED_MDLS_DATA = {}
 
 @hookimpl
 def get_template_help() -> Iterable:
-    pass
-    # return [FIELDS]
+    text = """
+    `{mdls:ATTRIBUTE}` returns the value of the metadata ATTRIBUTE as returned by the macOS `mdls` command. 
+    For example, `{mdls:kMDItemContentType}` returns the content type of the file, e.g. `public.python-script` or `public.mp3` 
+    and `{mdls:kMDItemKind}` returns a description of file type, e.g. `Python Script` or `MP3 Audio`.
+    """
+    fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
+    return ["**macOS Metadata Fields**", fields, text]
 
 
 @hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: str, options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

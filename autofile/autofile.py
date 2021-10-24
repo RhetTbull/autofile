@@ -86,7 +86,6 @@ def process_files(
             if not filter_file(file, glob, regex, filter_template):
                 verbose(f"Skipping file {file}")
                 continue
-            verbose(f"Processing file {file}")
             target_path = pathlib.Path(target)
 
             rendered_directories = []

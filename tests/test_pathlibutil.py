@@ -14,7 +14,7 @@ TEST_FILE = "tests/test_files/pears.jpg"
 TEST_FILE_NAME = "pears.jpg"
 TEST_DIR = "tests/test_files"
 
-# if on MacOS and pyobjc is installed, test the pyobjc methods
+# if on macOS and pyobjc is installed, test the pyobjc methods
 PYOBJC = False
 try:
     import Foundation

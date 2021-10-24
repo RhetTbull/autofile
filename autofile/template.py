@@ -3,6 +3,7 @@
 import importlib
 import locale
 import pathlib
+import re
 import shlex
 from textwrap import dedent
 from typing import Dict, List, Optional, Tuple, Union
@@ -35,7 +36,7 @@ DEFAULT_PLUGINS = (
     "autofile.plugins.templates.audio",
     "autofile.plugins.templates.uti",
     "autofile.plugins.templates.mdls",
-    "autofile.plugins.templates.strip",
+    "autofile.plugins.templates.format",
     "autofile.plugins.templates.filepath",
     "autofile.plugins.templates.filedates",
     "autofile.plugins.templates.filestat",

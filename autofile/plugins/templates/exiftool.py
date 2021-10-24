@@ -68,7 +68,7 @@ def get_template_help() -> Iterable:
 
 @hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: str, options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
 ) -> Optional[List[Optional[str]]]:
     """lookup value for os.stat values for filepath
 

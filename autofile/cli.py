@@ -35,11 +35,11 @@ from rich.markdown import Markdown
 from yaspin import yaspin
 
 from ._version import __version__
-from .autofile import process_files, MultipleFilesError
+from .autofile import MultipleFilesError, process_files
 from .constants import APP_NAME
 from .renderoptions import RenderOptions
 from .template import get_template_help
-from .utils import green, pluralize, red, bold
+from .utils import bold, green, pluralize, red
 
 # Set up rich console
 _console = Console()
@@ -184,7 +184,8 @@ formatter_settings = HelpFormatter.settings(
         metavar="PATTERN",
         help="Filter files to process with a regex pattern, e.g. '--regex \"IMG_[1-3].*\"' "
         "--regex may be repeated to use more than one pattern. "
-        'Multiple patterns treated as "OR", that is, a file that matches one or more patterns will be processed. ',
+        'Multiple patterns treated as "OR", that is, a file that matches one or more patterns will be processed. '
+        "Any valid python regular express may be used.",
     ),
     option(
         "--filter",
