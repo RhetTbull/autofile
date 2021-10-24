@@ -1,6 +1,6 @@
 .DS_Store
 venv/*
-*.egg-info/*
+*.egg-info/
 __pycache__
 *.pyc
 .vscode/
