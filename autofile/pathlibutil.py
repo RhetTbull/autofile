@@ -41,7 +41,7 @@ class PathlibUtil:
             Note: src and dest may be either a string or a pathlib.Path object
 
         Returns:
-            True if copy succeeded
+            PathLibUtil object of the new file/directory
 
         Raises:
             OSError if copy fails

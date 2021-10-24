@@ -2,10 +2,10 @@
 
 import pathvalidate
 
-# Max filename length on MacOS
+# Max filename length on macOS
 MAX_FILENAME_LEN = 255
 
-# Max directory name length on MacOS
+# Max directory name length on macOS
 MAX_DIRNAME_LEN = 255
 
 

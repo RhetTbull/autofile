@@ -3,10 +3,13 @@
 import locale
 import os
 import platform
+import tempfile
 
+import osxmetadata
 import pytest
 
 from autofile import FileTemplate, RenderOptions
+from autofile.pathlibutil import PathlibUtil
 
 PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"
@@ -100,3 +103,18 @@ def test_template_render(data):
     template = FileTemplate(data[0])
     result, _ = template.render(data[1], options=RenderOptions())
     assert result == data[2]
+
+
+def test_template_finder():
+    """Test {finder} template"""
+    with tempfile.TemporaryDirectory() as tmpdir:
+        test_file = PathlibUtil(PHOTO_FILE).copy_to(tmpdir)
+        md = osxmetadata.OSXMetaData(test_file)
+        md.tags = [osxmetadata.Tag("Foo")]
+        md.findercomment = "FizzBuzz"
+
+        template = FileTemplate(test_file)
+        rendered, _ = template.render(
+            "{finder:tags}-{finder:comment}", options=RenderOptions()
+        )
+        assert rendered == ["Foo-FizzBuzz"]

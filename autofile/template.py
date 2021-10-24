@@ -35,6 +35,7 @@ DEFAULT_PLUGINS = (
     "autofile.plugins.templates.exiftool",
     "autofile.plugins.templates.audio",
     "autofile.plugins.templates.uti",
+    "autofile.plugins.templates.finder",
     "autofile.plugins.templates.mdls",
     "autofile.plugins.templates.format",
     "autofile.plugins.templates.filepath",
