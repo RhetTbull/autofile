@@ -14,9 +14,7 @@ from typing import Iterable, List, Optional
 
 from tinytag import TinyTag
 
-from autofile.hookspecs import hookimpl
-from autofile.datetime_formatter import DateTimeFormatter
-from autofile.renderoptions import RenderOptions
+import autofile
 
 FIELDS = {
     "{audio}": "Use in form '{audio:TAG}'; Returns tag value for various audio types include mp3, "
@@ -43,7 +41,7 @@ SUBFIELDS = {
 }
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     The `{audio}` field provides access to audio-file related tags for audio files. The following formats are supported:
@@ -66,9 +64,9 @@ def get_template_help() -> Iterable:
     return ["**Audio Files**", fields, text, subfields]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

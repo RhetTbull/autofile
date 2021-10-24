@@ -3,9 +3,8 @@
 from osxmetadata import OSXMetaData
 from typing import Dict, Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
+import autofile
 from autofile.datetime_utils import datetime_naive_to_utc
-from autofile.renderoptions import RenderOptions
 
 FIELDS = {
     "{finder}": "Get metadata managed by macOS Finder such as tags and comments; use in form '{finder:SUBFIELD}', e.g. '{finder:tags}'",
@@ -14,7 +13,7 @@ FIELDS = {
 SUBFIELDS = {"tags": "Finder tags (keywords)", "comment": "Finder comment"}
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     `{finder}` provides access to Finder metadata. It must be used in the form `{finder:SUBFIELD}`
@@ -26,9 +25,9 @@ def get_template_help() -> Iterable:
     return ["**Finder Metadata**", fields, text, subfields]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

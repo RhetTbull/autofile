@@ -8,8 +8,9 @@ import tempfile
 import osxmetadata
 import pytest
 
-from autofile import FileTemplate, RenderOptions
 from autofile.pathlibutil import PathlibUtil
+from autofile.renderoptions import RenderOptions
+from autofile.template import FileTemplate
 
 PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"

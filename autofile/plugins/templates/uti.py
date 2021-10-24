@@ -26,8 +26,7 @@ from typing import Iterable, List, Optional
 import CoreServices
 import objc
 
-from autofile.hookspecs import hookimpl
-from autofile.renderoptions import RenderOptions
+import autofile
 from autofile.utils import get_os_version
 
 FIELDS = {
@@ -35,7 +34,7 @@ FIELDS = {
 }
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     The `{uti}` template returns the macOS Uniform Type Identifier (UTI) for the file. 
@@ -45,9 +44,9 @@ def get_template_help() -> Iterable:
     return ["**Uniform Type Identifier (UTI) Fields**", fields, text]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

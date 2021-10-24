@@ -5,9 +5,8 @@ import plistlib
 import subprocess
 from typing import Dict, Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
+import autofile
 from autofile.datetime_utils import datetime_naive_to_utc
-from autofile.renderoptions import RenderOptions
 
 FIELDS = {
     "{mdls}": "Get metadata attributes for file as returned by mdls command; use in form '{mdls:ATTRIBUTE}', for example, '{mdls:kMDItemContentType}'",
@@ -16,7 +15,7 @@ FIELDS = {
 CACHED_MDLS_DATA = {}
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     `{mdls:ATTRIBUTE}` returns the value of the metadata ATTRIBUTE as returned by the macOS `mdls` command. 
@@ -27,9 +26,9 @@ def get_template_help() -> Iterable:
     return ["**macOS Metadata Fields**", fields, text]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

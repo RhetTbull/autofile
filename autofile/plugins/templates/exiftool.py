@@ -3,10 +3,9 @@
 import datetime
 from typing import Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
+import autofile
 from autofile.datetime_formatter import DateTimeFormatter
 from autofile.exiftool import ExifToolCaching
-from autofile.renderoptions import RenderOptions
 
 FIELDS = {
     "{exiftool}": "Format: '{exiftool:GROUP:TAGNAME}'; use exiftool (https://exiftool.org) to extract metadata, "
@@ -16,8 +15,6 @@ FIELDS = {
     "but if specified, should be the same as used in `exiftool -G`, e.g. '{exiftool:EXIF:Make}'. "
     "exiftool must be installed in the path to use this template field (https://exiftool.org/).",
 }
-
-# TODO: add help on subfields and created_date/modified_date
 
 
 DATETIME_ATTRIBUTES = {
@@ -43,7 +40,7 @@ DATETIME_ATTRIBUTES = {
 DATETIME_SUBFIELDS = list(DATETIME_ATTRIBUTES.keys())
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     The `{exiftool}` template uses the third-party exiftool app (https://exiftool.org) to extract metadata from photo and video files.
@@ -66,9 +63,9 @@ def get_template_help() -> Iterable:
     return ["**Photo and Video Files**", fields, text, attributes]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for os.stat values for filepath
 

@@ -2,9 +2,8 @@
 
 from typing import Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
+import autofile
 from autofile.datetime_formatter import DateTimeFormatter
-from autofile.renderoptions import RenderOptions
 
 FIELDS = {
     "{strip}": "Use in form '{strip,TEMPLATE}'; strips whitespace from begining and end of rendered TEMPLATE value(s).",
@@ -12,7 +11,7 @@ FIELDS = {
 }
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     The `{strip}` and `{format}` fields are used to format strings. 
@@ -32,9 +31,9 @@ def get_template_help() -> Iterable:
     return ["**String Formatting Fields**", fields, text]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

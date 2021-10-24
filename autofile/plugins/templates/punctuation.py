@@ -2,8 +2,7 @@
 
 from typing import Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
-from autofile.renderoptions import RenderOptions
+import autofile
 
 PUNCTUATION = {
     "comma": ",",
@@ -40,7 +39,7 @@ FIELDS = {
 }
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     Within the template system, many punctuation characters have special meaning, e.g. `{}` indicates a template field 
@@ -52,9 +51,9 @@ def get_template_help() -> Iterable:
     return ["**Punctuation Fields**", fields, text]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """Called by template.py to get template value for custom template"""
     value = PUNCTUATION.get(field)

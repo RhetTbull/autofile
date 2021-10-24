@@ -2,14 +2,13 @@
 
 from typing import Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
-from autofile.renderoptions import RenderOptions
+import autofile
 
 # specify which template fields your plugin will provide
 FIELDS = {"{foo}": "Returns BAR", "{bar}": "Returns FOO"}
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     """Specify help text for your plugin; will get displayed with autofile --help
     Returns:
@@ -33,9 +32,9 @@ def get_template_help() -> Iterable:
     return ["**FooBar Fields**", fields, text]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 

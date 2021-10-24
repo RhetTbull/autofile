@@ -5,8 +5,7 @@ import os
 import pwd
 from typing import Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
-from autofile.renderoptions import RenderOptions
+import autofile
 
 FIELDS = {
     "{size}": "Size of file in bytes",
@@ -17,15 +16,15 @@ FIELDS = {
 }
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
     return ["**File Information Fields**", fields]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for os.stat values for filepath
 

@@ -4,9 +4,8 @@ import pathlib
 import shlex
 from typing import Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
+import autofile
 from autofile.path_utils import sanitize_dirname, sanitize_pathpart
-from autofile.renderoptions import RenderOptions
 
 FIELDS = {"{filepath}": "The full path to the file being processed"}
 
@@ -18,7 +17,7 @@ SUBFIELDS = {
 }
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     The `{filepath}` fields returns the full path to the source file being processed. 
@@ -44,9 +43,9 @@ def get_template_help() -> Iterable:
     return ["**File Path Fields**", fields, text, subfields]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for template pathlib template fields
 
@@ -60,17 +59,10 @@ def get_template_value(
     if field_stem != "filepath":
         return None
 
-    value = _get_pathlib_value(field, filepath, options.quote)
-
-    if options.filename:
-        value = sanitize_pathpart(value)
-    elif options.dirname:
-        value = sanitize_dirname(value)
-
-    return [value]
+    return [_get_pathlib_value(field, filepath)]
 
 
-def _get_pathlib_value(field, value, quote):
+def _get_pathlib_value(field, value, quote=False):
     """Get the value for a pathlib.Path type template
 
     Args:

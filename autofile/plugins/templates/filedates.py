@@ -4,9 +4,8 @@ import datetime
 import os
 from typing import Iterable, List, Optional
 
-from autofile.hookspecs import hookimpl
+import autofile
 from autofile.datetime_formatter import DateTimeFormatter
-from autofile.renderoptions import RenderOptions
 
 FIELDS = {
     "{created}": "File creation date/time",
@@ -35,7 +34,7 @@ DATETIME_ATTRIBUTES = {
 }
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
     Date/time fields may be formatted using "dot notation" attributes which are appended to the field name following a `.` (period). 
@@ -52,9 +51,9 @@ def get_template_help() -> Iterable:
     return ["**Date/Time Fields**", fields, text, attributes]
 
 
-@hookimpl
+@autofile.hookimpl
 def get_template_value(
-    filepath: str, field: str, subfield: str, default: List[str], options: RenderOptions
+    filepath: str, field: str, subfield: str, default: List[str]
 ) -> Optional[List[Optional[str]]]:
     """lookup value for file dates
 
