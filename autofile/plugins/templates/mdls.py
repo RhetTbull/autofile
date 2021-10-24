@@ -5,7 +5,7 @@ import plistlib
 import subprocess
 from typing import Dict, Iterable, List, Optional
 
-from autofile import hookimpl
+from autofile.hookspecs import hookimpl
 from autofile.datetime_utils import datetime_naive_to_utc
 from autofile.renderoptions import RenderOptions
 

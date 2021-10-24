@@ -4,7 +4,7 @@ import pathlib
 import shlex
 from typing import Iterable, List, Optional
 
-from autofile import hookimpl
+from autofile.hookspecs import hookimpl
 from autofile.path_utils import sanitize_dirname, sanitize_pathpart
 from autofile.renderoptions import RenderOptions
 

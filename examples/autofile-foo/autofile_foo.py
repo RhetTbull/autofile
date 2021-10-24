@@ -2,7 +2,8 @@
 
 from typing import Iterable, List, Optional
 
-from autofile import RenderOptions, hookimpl
+from autofile.hookspecs import hookimpl
+from autofile.renderoptions import RenderOptions
 
 # specify which template fields your plugin will provide
 FIELDS = {"{foo}": "Returns BAR", "{bar}": "Returns FOO"}

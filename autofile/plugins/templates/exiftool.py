@@ -3,7 +3,7 @@
 import datetime
 from typing import Iterable, List, Optional
 
-from autofile import hookimpl
+from autofile.hookspecs import hookimpl
 from autofile.datetime_formatter import DateTimeFormatter
 from autofile.exiftool import ExifToolCaching
 from autofile.renderoptions import RenderOptions

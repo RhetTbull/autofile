@@ -1,6 +1,16 @@
 # autofile
 
-Use templates to automatically move files into directories
+Automatically move or copy files based on metadata associated with the files.
+
+autofile uses a template system to specify the target directory and/or filename based on the file's metadata.  For example: 
+
+`autofile *.mp3 --target ~/Music --directory "{audio:artist}/{audio:album}"` 
+
+Will move all mp3 files to new folders with `Artist/Album` naming scheme.  
+
+The template system is very flexible and powerful allowing you to perform transforms on the metadata fields and use conditional logic. 
+
+autofile understands 
 
 ```
 $ ls -l ~/Pictures/NewPhotos

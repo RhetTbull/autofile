@@ -5,7 +5,7 @@ import os
 import pwd
 from typing import Iterable, List, Optional
 
-from autofile import hookimpl
+from autofile.hookspecs import hookimpl
 from autofile.renderoptions import RenderOptions
 
 FIELDS = {

@@ -14,7 +14,7 @@ from typing import Iterable, List, Optional
 
 from tinytag import TinyTag
 
-from autofile import hookimpl
+from autofile.hookspecs import hookimpl
 from autofile.datetime_formatter import DateTimeFormatter
 from autofile.renderoptions import RenderOptions
 

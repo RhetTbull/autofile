@@ -26,7 +26,7 @@ from typing import Iterable, List, Optional
 import CoreServices
 import objc
 
-from autofile import hookimpl
+from autofile.hookspecs import hookimpl
 from autofile.renderoptions import RenderOptions
 from autofile.utils import get_os_version
 
