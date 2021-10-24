@@ -10,6 +10,12 @@ from .template import FileTemplate, UnknownFieldError
 from .utils import noop
 
 
+class MultipleFilesError(Exception):
+    """Multiple files found"""
+
+    pass
+
+
 def filter_file(
     filepath: pathlib.Path,
     glob: Optional[List[str]] = None,
@@ -36,7 +42,6 @@ def filter_file(
             if results and all(NONE_STR_SENTINEL not in result for result in results):
                 filter_match = True
                 break
-                
 
     return (
         (glob_match if glob else True)
@@ -78,15 +83,40 @@ def process_files(
                 verbose(f"Skipping file {file}")
                 continue
             verbose(f"Processing file {file}")
+            target_path = pathlib.Path(target)
+
+            rendered_directories = []
             if directory_template:
                 rendered_directories, _ = FileTemplate(filename).render(
                     directory_template, options=RenderOptions(dirname=True)
                 )
-                print(f"{rendered_directories=}")
+                if len(rendered_directories) > 1 and not (any([copy, hardlink])):
+                    raise MultipleFilesError(
+                        f"{rendered_directories}"
+                    )
+            rendered_filenames = []
             if filename_template:
                 rendered_filenames, _ = FileTemplate(filename).render(
                     filename_template, options=RenderOptions(filename=True)
                 )
-                print(f"{rendered_filenames=}")
+                if (len(rendered_filenames) > 1) and not (any([copy, hardlink])):
+                    raise MultipleFilesError(
+                        f"{rendered_filenames}"
+                    )
+
+            # build target paths
+            if rendered_directories:
+                target_paths = [
+                    target_path / directory for directory in rendered_directories
+                ]
+            if rendered_filenames:
+                target_paths = [
+                    target_path / filename
+                    for target_path in target_paths
+                    for filename in rendered_filenames
+                ]
+            else:
+                target_paths = [target_path / file.name for target_path in target_paths]
+            print(f"{target_paths=}")
             files_processed += 1
     return files_processed

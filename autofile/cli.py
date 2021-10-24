@@ -35,7 +35,7 @@ from rich.markdown import Markdown
 from yaspin import yaspin
 
 from ._version import __version__
-from .autofile import process_files
+from .autofile import process_files, MultipleFilesError
 from .constants import APP_NAME
 from .renderoptions import RenderOptions
 from .template import get_template_help
@@ -291,7 +291,15 @@ def cli(
             files_processed = process_files_(files)
     else:
         verbose(text)
-        files_processed = process_files_(files)
+        try:
+            files_processed = process_files_(files)
+        except MultipleFilesError as e:
+            print_error(
+                "Error: --directory or --filename template produced multiple target paths; cannot move file to more than one target path. "
+                "Change the template or use --copy or --hardlink: "
+                f"{e}"
+            )
+            sys.exit(1)
 
     verbose(
         f"Done. Processed {files_processed} {pluralize(files_processed, 'file', 'files')}."
