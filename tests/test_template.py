@@ -44,6 +44,7 @@ TEST_DATA = [
     [PHOTO_FILE, "{filepath.parent.name}", ["test_files"]],
     [PHOTO_FILE, "{exiftool:created.year}", ["2021"]],
     [PHOTO_FILE, "{exiftool:Make}", ["Apple"]],
+    [PHOTO_FILE, "{,+exiftool:Keywords}", ["fruit,pears"]],
     [PHOTO_FILE, "{exiftool:EXIF:Make}", ["Apple"]],
     [PHOTO_FILE, "{exiftool:IPTC:Keywords contains pears?pears,not_pears}", ["pears"]],
     [PHOTO_FILE, "{mdls:kMDItemKind}", ["JPEG image"]],
@@ -60,6 +61,7 @@ TEST_DATA = [
     [PHOTO_FILE, "{filepath.stem|braces}", ["{pears}"]],
     [PHOTO_FILE, "{filepath.stem|parens}", ["(pears)"]],
     [PHOTO_FILE, "{filepath.stem|brackets}", ["[pears]"]],
+    [PHOTO_FILE, "{filepath.stem[e,E|a,A]}", ["pEArs"]],
     [AUDIO_FILE, "{audio:title|titlecase}", ["Warm Lights (Ft. Apoxode)"]],
     [AUDIO_FILE, "{audio:title|capitalize}", ["Warm lights (ft. apoxode)"]],
 ]

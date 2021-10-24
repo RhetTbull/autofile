@@ -121,7 +121,7 @@ class PathlibUtil:
         return dest
 
     def mkdir(self):
-        """Create director at this path"""
+        """Create directory at this path"""
         # pathlib.Path().mkdir returns None but we want to return the new path
         self.path.mkdir()
         return self

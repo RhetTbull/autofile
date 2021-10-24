@@ -5,6 +5,7 @@ import re
 from typing import Callable, List, Optional
 
 from .constants import NONE_STR_SENTINEL
+from .pathlibutil import PathlibUtil
 from .renderoptions import RenderOptions
 from .template import FileTemplate, UnknownFieldError
 from .utils import noop
@@ -65,11 +66,14 @@ def process_files(
     verbose: Optional[Callable] = None,
 ) -> int:
     """Process files"""
+
     verbose = verbose or noop
+    dir_options = RenderOptions(dirname=True)
+    file_options = RenderOptions(filename=True)
 
     files_processed = 0
     for filename in files:
-        file = pathlib.Path(filename)
+        file = PathlibUtil(filename)
         if file.is_dir():
             if walk:
                 verbose(f"Processing directory {file}")
@@ -88,23 +92,21 @@ def process_files(
             rendered_directories = []
             if directory_template:
                 rendered_directories, _ = FileTemplate(filename).render(
-                    directory_template, options=RenderOptions(dirname=True)
+                    directory_template, options=dir_options
                 )
                 if len(rendered_directories) > 1 and not (any([copy, hardlink])):
-                    raise MultipleFilesError(
-                        f"{rendered_directories}"
-                    )
+                    raise MultipleFilesError(f"{rendered_directories}")
+
             rendered_filenames = []
             if filename_template:
                 rendered_filenames, _ = FileTemplate(filename).render(
-                    filename_template, options=RenderOptions(filename=True)
+                    filename_template, options=file_options
                 )
                 if (len(rendered_filenames) > 1) and not (any([copy, hardlink])):
-                    raise MultipleFilesError(
-                        f"{rendered_filenames}"
-                    )
+                    raise MultipleFilesError(f"{rendered_filenames}")
 
             # build target paths
+            target_paths = [target_path]
             if rendered_directories:
                 target_paths = [
                     target_path / directory for directory in rendered_directories
@@ -117,6 +119,20 @@ def process_files(
                 ]
             else:
                 target_paths = [target_path / file.name for target_path in target_paths]
-            print(f"{target_paths=}")
+
+            # move, copy, or hardlink files
+            for target_path in target_paths:
+                action = "Copying" if copy else "Hardlinking" if hardlink else "Moving"
+                verbose(f"{action} {file} to {target_path}")
+                if not dry_run:
+                    if not target_path.parent.exists():
+                        target_path.parent.mkdir(parents=True)
+                    if hardlink:
+                        file.hardlink_at(target_path)
+                    elif copy:
+                        file.copy_to(target_path)
+                    else:
+                        file.move_to(target_path)
+
             files_processed += 1
     return files_processed

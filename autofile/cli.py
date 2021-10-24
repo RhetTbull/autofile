@@ -288,7 +288,15 @@ def cli(
 
     if not _verbose:
         with yaspin(text=text):
-            files_processed = process_files_(files)
+            try:
+                files_processed = process_files_(files)
+            except MultipleFilesError as e:
+                print_error(
+                    "Error: --directory or --filename template produced multiple target paths; cannot move file to more than one target path. "
+                    "Change the template or use --copy or --hardlink: "
+                    f"{e}"
+                )
+                sys.exit(1)
     else:
         verbose(text)
         try:
