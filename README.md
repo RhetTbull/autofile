@@ -575,4 +575,4 @@ fields to do so. For example, {openbrace}value{closebrace} will render to
 
 ## Contributions
 
-Contributions of all kinds are welcome!  If you find a bug or have an idea to improve autofile, please open an issue!
+Contributions of all kinds are welcome!  If you find a bug or have an idea to improve autofile, please [open an issue](https://github.com/RhetTbull/autofile/issues)!
