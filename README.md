@@ -24,7 +24,7 @@ total 12160
 -rw-r--r--@ 1 user  staff  3449684 Oct 24 07:10 IMG_1234.jpeg
 -rw-r--r--@ 1 user  staff  2771656 Oct 23 12:53 IMG_1235.jpg
 
-$ autofile --target ~/Pictures/FiledPhotos --directory "{exiftool:Make}/{exiftool:created.year}/{exiftool:created.month}" ~/Pictures/NewPhotos/* --verbose
+$ autofile --target ~/Pictures/FiledPhotos --directory "{exiftool:Make}/{exiftool:created.year}/{exiftool:created.month}" ~/Pictures/NewPhotos/* 
 Processing 2 files
 Moving /Users/user/Pictures/NewPhotos/IMG_1234.jpeg to /Users/user/Pictures/FiledPhotos/Apple/2021/October/IMG_1234.jpeg
 Moving /Users/user/Pictures/NewPhotos/IMG_1235.jpg to /Users/user/Pictures/FiledPhotos/Apple/2021/October/IMG_1235.jpg
@@ -59,7 +59,7 @@ file7.mp3
 file8.mp3
 file9.mp3
 
-$ autofile --target ~/Music/Filed --directory "{audio:artist}/{audio:album}" --filename "{format:int:02d,{audio:track}} - {audio:title}.mp3" ~/Music/Unfiled/*.mp3 --verbose
+$ autofile --target ~/Music/Filed --directory "{audio:artist}/{audio:album}" --filename "{format:int:02d,{audio:track}} - {audio:title}.mp3" ~/Music/Unfiled/*.mp3 
 Processing 12 files
 Moving /Users/user/Music/Unfiled/file1.mp3 to /Users/user/Music/Filed/The Piano Guys/Wonders/01 - Story of My Life.mp3
 Moving /Users/user/Music/Unfiled/file10.mp3 to /Users/user/Music/Filed/The Piano Guys/Wonders/10 - The Mission : How Great Thou
