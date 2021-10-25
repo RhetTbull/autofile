@@ -15,6 +15,7 @@ from . import hookspecs
 from ._version import __version__
 from .constants import APP_NAME
 from .path_utils import sanitize_dirname, sanitize_filename, sanitize_pathpart
+from .pathlibutil import PathlibUtil
 from .renderoptions import RenderOptions
 
 
@@ -128,13 +129,15 @@ class FileTemplateParser:
 class FileTemplate:
     """FileTemplate class to render a template string from a file and it's associated metadata"""
 
-    def __init__(self, filepath: str):
+    def __init__(self, filepath: Union[str, PathlibUtil, pathlib.Path]):
         """Inits FileTemplate class with filepath and exiftool_path"""
 
-        if not pathlib.Path(filepath).exists():
+        if isinstance(filepath, str):
+            filepath = PathlibUtil(filepath)
+        if not filepath.exists():
             raise FileNotFoundError(f"File {filepath} does not exist")
 
-        self.filepath = filepath
+        self.filepath = str(filepath)
         self.hook = PM.hook
 
         # get parser singleton

@@ -78,7 +78,18 @@ def process_files(
             if walk:
                 verbose(f"Processing directory {file}")
                 files_processed += process_files(
-                    file.iterdir(), walk=walk, dry_run=dry_run
+                    file.iterdir(),
+                    target=target,
+                    directory_template=directory_template,
+                    filename_template=filename_template,
+                    walk=walk,
+                    copy=copy,
+                    hardlink=hardlink,
+                    dry_run=dry_run,
+                    glob=glob,
+                    regex=regex,
+                    filter_template=filter_template,
+                    verbose=verbose,
                 )
             else:
                 verbose(f"Skipping directory {file}")

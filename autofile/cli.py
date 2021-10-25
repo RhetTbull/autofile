@@ -45,8 +45,8 @@ from .utils import bold, green, pluralize, red
 _console = Console()
 _console_stderr = Console(stderr=True)
 
-# if True, shows verbose output, controlled via --verbose flag
-_verbose = False
+# if True, shows verbose output, turned off via --quiet flag
+_verbose = True
 
 
 def verbose(message_str, **kwargs):
@@ -202,7 +202,7 @@ formatter_settings = HelpFormatter.settings(
 @option_group(
     "Options",
     option("--walk", "-w", is_flag=True, help="Recursively walk directories."),
-    option("--verbose", "-V", "verbose_", is_flag=True, help="Show verbose output."),
+    option("--quiet", "-Q", is_flag=True, help="Turn off verbose output."),
     option(
         "--plain",
         is_flag=True,
@@ -236,7 +236,7 @@ def cli(
     filename,
     target,
     walk,
-    verbose_,
+    quiet,
     plain,
     copy,
     hardlink,
@@ -250,7 +250,7 @@ def cli(
 
     # used to control whether to print out verbose output
     global _verbose
-    _verbose = verbose_
+    _verbose = not quiet 
 
     if plain:
         # Plain text mode, disable rich output (used for testing)

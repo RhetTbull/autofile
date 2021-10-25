@@ -12,7 +12,7 @@
 
 from typing import Iterable, List, Optional
 
-from tinytag import TinyTag
+from tinytag import TinyTag, TinyTagException
 
 import autofile
 
@@ -79,12 +79,18 @@ def get_template_value(
     if "{" + field + "}" not in FIELDS:
         return None
 
-    tag = TinyTag.get(filepath)
-    vals = []
-    if field == "audio":
-        if subfield is None:
-            raise ValueError("subfield must be specified for audio field")
-        if subfield not in SUBFIELDS:
-            raise ValueError(f"Unknown audio subfield: {subfield}")
-        vals = getattr(tag, subfield)
-    return [vals]
+    try:
+        tag = TinyTag.get(filepath)
+        vals = []
+        if field == "audio":
+            if subfield is None:
+                raise ValueError("subfield must be specified for audio field")
+            if subfield not in SUBFIELDS:
+                raise ValueError(f"Unknown audio subfield: {subfield}")
+            vals = getattr(tag, subfield)
+        return [vals]
+    except TinyTagException as e:
+        autofile.cli.print_warning(
+            f"Error reading tag {field}:{subfield} for file {filepath}: {e}"
+        )
+        return [None]
