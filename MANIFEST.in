@@ -1,0 +1,3 @@
+include README.md
+include autofile/template.tx
+include autofile/template.md
