@@ -107,7 +107,7 @@ $ tree ~/Music/Filed
 
 Currently macOS only. Tested on macOS 10.15.7 (Catalina) but should work fine on newer versions. With the exception of macOS specific metadata like Finder tags, this could be ported to linux fairly easily but I don't have a use case for this.  
 
-Copy and move use native macOS calls to take advantage of advanced features copy-on-write that are not available with the standard python system calls. 
+Copy and move use native macOS calls to take advantage of advanced features such as copy-on-write that are not available with the standard python system calls. 
 
 ## Cautions and Warnings
 
