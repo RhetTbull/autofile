@@ -281,7 +281,7 @@ For example:
    It would not match keyword 'BeachDay'.                                      
  • {exiftool:Keywords contains Beach} resolves to True if any keyword contains 
    the word 'Beach' so it would match both 'Beach' and 'BeachDay'.             
- • {ISO < 100} resolves to True if the file's ISO is < 100.                    
+ • {exiftool:ISO < 100} resolves to True if the file's ISO is < 100.                    
  • {exiftool:Keywords|lower contains beach} uses the lower case filter to do   
    case-insensitive matching to match any keyword that contains the word       
    'beach'.                                                                    
