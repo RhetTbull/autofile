@@ -10,7 +10,7 @@ Will move all mp3 files to new folders with `Artist/Album` naming scheme.
 
 The template system is very flexible and powerful allowing you to perform transforms on the metadata fields and use conditional logic. 
 
-autofile understands metadata about audio files (MP3, OPP, etc), photo & video files, macOS specific metadata such as Finder tags as well as various filesystem related metadata. 
+autofile understands metadata about audio files (MP3, OGG, etc), photo & video files, macOS specific metadata such as Finder tags as well as various filesystem related metadata. 
 
 Photo and video metadata (EXIF, IPTC, XMP, etc.) requires that the third-party [exiftool](https://exiftool.org/) command line utility be installed. All other metadata works with no additional dependencies.
 
