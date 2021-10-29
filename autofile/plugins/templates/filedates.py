@@ -6,11 +6,16 @@ from typing import Iterable, List, Optional
 
 import autofile
 from autofile.datetime_formatter import DateTimeFormatter
+from autofile.datetime_utils import datetime_utc_to_local
+
+TODAY = None
 
 FIELDS = {
     "{created}": "File creation date/time",
     "{modified}": "File modification date/time",
     "{accessed}": "File last accessed date/time",
+    "{today}": "The current date/time (as of when {today} is first evaluated)",
+    "{now}": "The current date/time (evaluated at the time the template is processed)",
 }
 
 DATETIME_ATTRIBUTES = {
@@ -40,6 +45,10 @@ def get_template_help() -> Iterable:
     Date/time fields may be formatted using "dot notation" attributes which are appended to the field name following a `.` (period). 
     For example, `{created.month}` resolves to the month name of the file's creation date in the user's locale, e.g. `December`. 
 
+    The `{today}` and `{now}` fields resolve to the current date/time with one key distinction between them: 
+    `{today}` is the current date/time as of when `{today}` is first evaluated and will remain unchanged for every file processed; 
+    `{now}` is the current date/time at the time each template is processed and will change with every file processed. 
+
     The following attributes are available:
     
     """
@@ -63,6 +72,8 @@ def get_template_value(
     Returns:
         The matching template value (which may be None).
     """
+    global TODAY
+
     field = field.split(".", 1)
     if "{" + field[0] + "}" not in FIELDS:
         return None
@@ -75,6 +86,13 @@ def get_template_value(
         dt = datetime.datetime.fromtimestamp(stat_info.st_mtime)
     elif field[0] == "accessed":
         dt = datetime.datetime.fromtimestamp(stat_info.st_atime)
+    elif field[0] == "today":
+        if TODAY is None:
+            # initialize TODAY only the first time the template is evaluated
+            TODAY = datetime_utc_to_local(datetime.datetime.now(datetime.timezone.utc))
+        dt = TODAY
+    elif field[0] == "now":
+        dt = datetime_utc_to_local(datetime.datetime.now(datetime.timezone.utc))
     else:
         raise ValueError(f"Unknown field {field}")
 

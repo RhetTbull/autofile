@@ -7,7 +7,9 @@ import tempfile
 
 import osxmetadata
 import pytest
+from freezegun import freeze_time
 
+import autofile
 from autofile.pathlibutil import PathlibUtil
 from autofile.renderoptions import RenderOptions
 from autofile.template import FileTemplate
@@ -71,6 +73,17 @@ TEST_DATA = [
 ]
 
 
+@pytest.fixture
+def setlocale():
+    # set locale and timezone for testing
+    locale.setlocale(locale.LC_ALL, "en_US")
+    tz = os.environ.get("TZ")
+    os.environ["TZ"] = "US/Pacific"
+    yield
+    if tz:
+        os.environ["TZ"] = tz
+
+
 def test_template_render_punctuation():
     """Test that punctuation is rendered correctly"""
     options = RenderOptions()
@@ -94,12 +107,8 @@ def test_template_render_filestat():
 
 
 @pytest.mark.parametrize("data", TEST_DATA)
-def test_template_render(data):
+def test_template_render(data, setlocale):
     """Test template rendering"""
-
-    # set locale and timezone for testing
-    locale.setlocale(locale.LC_ALL, "en_US")
-    os.environ["TZ"] = "US/Pacific"
 
     template = FileTemplate(data[0])
     result, _ = template.render(data[1], options=RenderOptions())
@@ -119,3 +128,25 @@ def test_template_finder():
             "{finder:tags}-{finder:comment}", options=RenderOptions()
         )
         assert rendered == ["Foo-FizzBuzz"]
+
+
+@freeze_time("2021-10-29T05:39:00.028590-07:00")
+def test_template_filedates_today(setlocale):
+    """Test {today}"""
+    autofile.plugins.templates.filedates.TODAY = None
+    template = FileTemplate(PHOTO_FILE)
+    rendered, _ = template.render("{today}", options=RenderOptions())
+    assert rendered == ["2021-10-29T05:39:00.028590-07:00"]
+    rendered, _ = template.render("{today}", options=RenderOptions())
+    assert rendered == ["2021-10-29T05:39:00.028590-07:00"]
+
+
+@freeze_time("2021-10-29T05:39:00.012345-07:00")
+def test_template_filedates_now(setlocale):
+    """Test {now}"""
+    autofile.plugins.templates.filedates.TODAY = None
+    template = FileTemplate(PHOTO_FILE)
+    rendered, _ = template.render("{now}", options=RenderOptions())
+    assert rendered == ["2021-10-29T05:39:00.012345-07:00"]
+    rendered, _ = template.render("{now}", options=RenderOptions())
+    assert rendered == ["2021-10-29T05:39:00.012345-07:00"]
