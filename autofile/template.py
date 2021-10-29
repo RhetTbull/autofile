@@ -164,7 +164,7 @@ class FileTemplate:
     def render(
         self,
         template: str,
-        options: RenderOptions,
+        options: Optional[RenderOptions] = None,
     ):
         """Render a filename or directory template
 
@@ -179,6 +179,7 @@ class FileTemplate:
         if type(template) is not str:
             raise TypeError(f"template must be type str, not {type(template)}")
 
+        options = options or RenderOptions()
         self.options = options
         self.tag = options.tag
         self.inplace_sep = options.inplace_sep
