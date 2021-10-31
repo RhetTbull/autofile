@@ -16,6 +16,8 @@ from autofile.template import FileTemplate
 
 PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"
+DOC_FILE_1 = "tests/test_files/test1_data.docx"
+DOC_FILE_2 = "tests/test_files/test2_no_data.docx"
 
 PUNCTUATION = {
     "comma": ",",
@@ -35,6 +37,7 @@ PUNCTUATION = {
 }
 
 TEST_DATA = [
+    # dates and paths
     [PHOTO_FILE, "{modified.year}", ["2021"]],
     [PHOTO_FILE, "{created.year}", ["2021"]],
     [PHOTO_FILE, "{created.mm}", ["10"]],
@@ -48,18 +51,24 @@ TEST_DATA = [
     [PHOTO_FILE, "{filepath.name}", ["pears.jpg"]],
     [PHOTO_FILE, "{filepath.stem}", ["pears"]],
     [PHOTO_FILE, "{filepath.parent.name}", ["test_files"]],
+    # exiftool
     [PHOTO_FILE, "{exiftool:created.year}", ["2021"]],
     [PHOTO_FILE, "{exiftool:Make}", ["Apple"]],
     [PHOTO_FILE, "{,+exiftool:Keywords}", ["fruit,pears"]],
     [PHOTO_FILE, "{exiftool:EXIF:Make}", ["Apple"]],
     [PHOTO_FILE, "{exiftool:IPTC:Keywords contains pears?pears,not_pears}", ["pears"]],
+    # mdls
     [PHOTO_FILE, "{mdls:kMDItemKind}", ["JPEG image"]],
-    [PHOTO_FILE, "{strip, Foo Bar }", ["Foo Bar"]],
-    [PHOTO_FILE, "{uti}", ["public.jpeg"]],
     [AUDIO_FILE, "{mdls:kMDItemContentType}", ["public.mp3"]],
+    # strip
+    [PHOTO_FILE, "{strip, Foo Bar }", ["Foo Bar"]],
+    # uti
+    [PHOTO_FILE, "{uti}", ["public.jpeg"]],
+    # mp3 file
     [AUDIO_FILE, "{audio:title}", ["Warm Lights (ft. Apoxode)"]],
     [AUDIO_FILE, "{audio:artist}", ["Darkroom"]],
     [AUDIO_FILE, "{exiftool:ITPC:Title}", ["_"]],
+    # filters
     [PHOTO_FILE, "{filepath.stem|lower}", ["pears"]],
     [PHOTO_FILE, "{filepath.stem|upper}", ["PEARS"]],
     [PHOTO_FILE, "{filepath.stem|strip}", ["pears"]],
@@ -70,6 +79,43 @@ TEST_DATA = [
     [PHOTO_FILE, "{filepath.stem[e,E|a,A]}", ["pEArs"]],
     [AUDIO_FILE, "{audio:title|titlecase}", ["Warm Lights (Ft. Apoxode)"]],
     [AUDIO_FILE, "{audio:title|capitalize}", ["Warm lights (ft. apoxode)"]],
+    # docx
+    [PHOTO_FILE, "{docx:author}", ["_"]],
+    [DOC_FILE_1, "{docx:author}", ["Rhet Turnbull"]],
+    [DOC_FILE_1, "{docx:category}", ["test"]],
+    [DOC_FILE_1, "{docx:comments}", ["This is a comment"]],
+    [DOC_FILE_1, "{docx:content_status}", ["Draft"]],
+    [DOC_FILE_1, "{docx:created}", ["2021-10-30T08:15:00"]],
+    [DOC_FILE_1, "{docx:created.year}", ["2021"]],
+    [DOC_FILE_1, "{docx:identifier}", ["test"]],
+    [DOC_FILE_1, "{docx:keywords}", ["test, test2"]],
+    [DOC_FILE_1, "{docx:language}", ["en-US"]],
+    [DOC_FILE_1, "{docx:last_modified_by}", ["Rhet Turnbull"]],
+    [DOC_FILE_1, "{docx:last_printed}", ["2021-10-30T21:15:00"]],
+    [DOC_FILE_1, "{docx:modified}", ["2021-10-30T22:15:00"]],
+    [DOC_FILE_1, "{docx:modified.mm}", ["10"]],
+    [DOC_FILE_1, "{docx:revision}", ["42"]],
+    [DOC_FILE_1, "{docx:subject}", ["test"]],
+    [DOC_FILE_1, "{docx:title}", ["Test Document"]],
+    [DOC_FILE_1, "{docx:version}", ["1.0"]],
+    # docx with blank metadata
+    [DOC_FILE_2, "{docx:author}", ["Rhet Turnbull"]],
+    [DOC_FILE_2, "{docx:category}", ["_"]],
+    [DOC_FILE_2, "{docx:comments}", ["This is a comment"]],
+    [DOC_FILE_2, "{docx:content_status}", ["_"]],
+    [DOC_FILE_2, "{docx:created}", ["2021-10-30T08:15:00"]],
+    [DOC_FILE_2, "{docx:created.year}", ["2021"]],
+    [DOC_FILE_2, "{docx:identifier}", ["_"]],
+    [DOC_FILE_2, "{docx:keywords}", ["_"]],
+    [DOC_FILE_2, "{docx:language}", ["_"]],
+    [DOC_FILE_2, "{docx:last_modified_by}", ["_"]],
+    [DOC_FILE_1, "{docx:last_printed}", ["2021-10-30T21:15:00"]],
+    [DOC_FILE_1, "{docx:modified}", ["2021-10-30T22:15:00"]],
+    [DOC_FILE_1, "{docx:modified.mm}", ["10"]],
+    [DOC_FILE_2, "{docx:revision}", ["1"]],
+    [DOC_FILE_2, "{docx:subject}", ["_"]],
+    [DOC_FILE_2, "{docx:title}", ["_"]],
+    [DOC_FILE_2, "{docx:version}", ["_"]],
 ]
 
 
