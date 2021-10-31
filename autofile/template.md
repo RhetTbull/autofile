@@ -36,9 +36,11 @@ Valid filters are:
 - titlecase: Convert value to title case, e.g. 'my value' => 'My Value'.
 - capitalize: Capitalize first word of value and convert other words to lower case, e.g. 'MY VALUE' => 'My value'.
 - braces: Enclose value in curly braces, e.g. 'value => '{value}'.
-- parens: Enclose value in parentheses, e.g. 'value' => '(value')
-- brackets: Enclose value in brackets, e.g. 'value' => '[value]'
-- split(delim): Split value into a list of values using delim as delimiter, e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;)
+- parens: Enclose value in parentheses, e.g. 'value' => '(value').
+- brackets: Enclose value in brackets, e.g. 'value' => '[value]'.
+- split(delim): Split value into a list of values using delim as delimiter, e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;).
+- chop(x): Remove x characters off the end of value, e.g. chop(1): 'Value' => 'Valu'.
+- chomp(x): Remove x characters from the beginning of value, e.g. chomp(1): 'Value' => 'alue'.
 
 <!-- - shell_quote: Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.
 - function: Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxfiles/blob/master/examples/template_filter.py

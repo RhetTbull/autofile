@@ -118,6 +118,13 @@ TEST_DATA = [
     [DOC_FILE_2, "{docx:version}", ["_"]],
     # split filter
     [DOC_FILE_1, "{docx:keywords|split(,)|strip}", ["test", "test2"]],
+    # chop, chomp
+    [DOC_FILE_1, "{docx:author|chop(2)|lower}", ["rhet turnbu"]],
+    [DOC_FILE_1, "{docx:author|lower|chop(2)}", ["rhet turnbu"]],
+    [DOC_FILE_1, "{docx:author|chomp(1)|upper}", ["HET TURNBULL"]],
+    [DOC_FILE_1, "{docx:author|upper|chomp(1)}", ["HET TURNBULL"]],
+    [DOC_FILE_1, "{docx:author|upper|chomp(1)|chop(1)|split( )}", ["HET", "TURNBUL"]],
+    [DOC_FILE_1, "{docx:author|chomp(0)|chomp(0)}", ["Rhet Turnbull"]],
 ]
 
 

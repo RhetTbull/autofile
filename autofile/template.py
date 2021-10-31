@@ -91,7 +91,9 @@ FILTER_VALUES = {
     "parens": "Enclose value in parentheses, e.g. 'value' => '(value').",
     "brackets": "Enclose value in brackets, e.g. 'value' => '[value]'.",
     "shell_quote": "Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
-    "split(str)": "Splits the value into a list using 'str' as delimiter, e.g. split(;) would split 'foo;bar' into [foo, bar]."
+    "split(str)": "Splits the value into a list using 'str' as delimiter, e.g. split(;) would split 'foo;bar' into [foo, bar].",
+    "chop(x)": "Remove x characters off the end of value, e.g. chop(1): 'Value' => 'Valu'.",
+    "chomp(x)": "Remove x characters from the beginning of value, e.g. chomp(1): 'Value' => 'alue'.",
     # "function": "Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxphotos/blob/master/examples/template_filter.py",
 }
 
@@ -499,6 +501,7 @@ class FileTemplate:
             else:
                 value = [shlex.quote(values)] if values else []
         elif filter_.startswith("split"):
+            # split on delimiter
             delim = filter_.split("split")[1][1:-1]
             if delim:
                 new_values = []
@@ -507,6 +510,22 @@ class FileTemplate:
                 value = new_values
             else:
                 value = values
+        elif filter_.startswith("chop"):
+            # chop off characters from the end
+            chop = filter_.split("chop")[1][1:-1]
+            try:
+                chop = int(chop)
+            except ValueError:
+                raise ValueError(f"Invalid value for chop: {chop}")
+            value = [v[:-chop] for v in values] if chop else values
+        elif filter_.startswith("chomp"):
+            # chop off characters from the beginning
+            chomp = filter_.split("chomp")[1][1:-1]
+            try:
+                chomp = int(chomp)
+            except ValueError:
+                raise ValueError(f"Invalid value for chomp: {chomp}")
+            value = [v[chomp:] for v in values] if chomp else values
         # elif filter_.startswith("function:"):
         # value = self.get_template_value_filter_function(filter_, values)
         else:

@@ -235,10 +235,14 @@ Valid filters are:
  • capitalize: Capitalize first word of value and convert other words to lower 
    case, e.g. 'MY VALUE' => 'My value'.                                        
  • braces: Enclose value in curly braces, e.g. 'value => '{value}'.            
- • parens: Enclose value in parentheses, e.g. 'value' => '(value')             
- • brackets: Enclose value in brackets, e.g. 'value' => '[value]'              
+ • parens: Enclose value in parentheses, e.g. 'value' => '(value').            
+ • brackets: Enclose value in brackets, e.g. 'value' => '[value]'.             
  • split(delim): Split value into a list of values using delim as delimiter,   
-   e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;)          
+   e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;).         
+ • chop(x): Remove x characters off the end of value, e.g. chop(1): 'Value' => 
+   'Valu'.                                                                     
+ • chomp(x): Remove x characters from the beginning of value, e.g. chomp(1):   
+   'Value' => 'alue'.                                                          
 
 e.g. if file keywords are ["FOO","bar"]:                                       
 

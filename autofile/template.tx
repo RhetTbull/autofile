@@ -75,7 +75,7 @@ Filter:
 ;
 
 FILTER_FUNCTION:
-    /[\.\w:\/]+(\(.*\))?/
+    /[\.\w:\/]+(\([^\)]*\))?/
 ;
 
 Conditional:
