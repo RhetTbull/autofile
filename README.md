@@ -113,6 +113,10 @@ Copy and move use native macOS calls to take advantage of advanced features such
 
 This software is feature complete but not yet fully tested.  No warranty of any kind is implied or provided.  Please ensure you have a backup before using this software as it can rename and move your files with no undo feature.  I recommend you always run autofile with the `--dry-run` flag first to ensure you understand exactly what it will do.
 
+## Contributions
+
+Contributions of all kinds are welcome!  If you find a bug or have an idea to improve autofile, please [open an issue](https://github.com/RhetTbull/autofile/issues)!
+
 ## Command Line Reference
 
 ```
@@ -281,7 +285,7 @@ For example:
    It would not match keyword 'BeachDay'.                                      
  • {exiftool:Keywords contains Beach} resolves to True if any keyword contains 
    the word 'Beach' so it would match both 'Beach' and 'BeachDay'.             
- • {exiftool:ISO < 100} resolves to True if the file's ISO is < 100.                    
+ • {ISO < 100} resolves to True if the file's ISO is < 100.                    
  • {exiftool:Keywords|lower contains beach} uses the lower case filter to do   
    case-insensitive matching to match any keyword that contains the word       
    'beach'.                                                                    
@@ -345,11 +349,20 @@ Field       Description
 {created}   File creation date/time
 {modified}  File modification date/time
 {accessed}  File last accessed date/time
+{today}     The current date/time (as of when {today} is first evaluated)
+{now}       The current date/time (evaluated at the time the template is
+            processed)
 
 Date/time fields may be formatted using "dot notation" attributes which are    
 appended to the field name following a . (period). For example, {created.month}
 resolves to the month name of the file's creation date in the user's locale,   
 e.g. December.                                                                 
+
+The {today} and {now} fields resolve to the current date/time with one key     
+distinction between them: {today} is the current date/time as of when {today}  
+is first evaluated and will remain unchanged for every file processed; {now} is
+the current date/time at the time each template is processed and will change   
+with every file processed.                                                     
 
 The following attributes are available:                                        
 
@@ -547,6 +560,78 @@ strftime   Apply strftime template to date/time. Should be used in form
            number of year: '2020-23'. If used with no template will return null
            value. See https://strftime.org/ for help on strftime templates.
 
+Microsoft Word Document Fields                                                 
+
+Field   Description
+{docx}  Access metadata properties of Microsoft Word document files (.docx);
+        use in format {docx:SUBFIELD}
+
+Access metadata properties of Microsoft Word document files (.docx). Use in    
+format {docx:SUBFIELD} where SUBFIELD is one of the following:                 
+
+Subfield          Description
+author            Named ‘creator’ in spec. An entity primarily responsible for
+                  making the content of the resource. (Dublin Core)
+category          A categorization of the content of this package. Example
+                  values for this property might include: Resume, Letter,
+                  Financial Forecast, Proposal, Technical Presentation, and so
+                  on. (Open Packaging Conventions)
+comments          Named ‘description’ in spec. An explanation of the content of
+                  the resource. Values might include an abstract, table of
+                  contents, reference to a graphical representation of content,
+                  and a free-text account of the content. (Dublin Core)
+content_status    The status of the content. Values might include “Draft”,
+                  “Reviewed”, and “Final”. (Open Packaging Conventions)
+created           Date of creation of the resource; a date/time value. (Dublin
+                  Core)
+identifier        An unambiguous reference to the resource within a given
+                  context. (Dublin Core)
+keywords          A delimited set of keywords to support searching and
+                  indexing. This is typically a list of terms that are not
+                  available elsewhere in the properties. (Open Packaging
+                  Conventions)
+language          The language of the intellectual content of the resource.
+                  (Dublin Core)
+last_modified_by  The user who performed the last modification. The
+                  identification is environment-specific. Examples include a
+                  name, email address, or employee ID. It is recommended that
+                  this value be as concise as possible. (Open Packaging
+                  Conventions)
+last_printed      The date and time of the last printing; a date/time value.
+                  (Open Packaging Conventions)
+modified          Date on which the resource was changed; a date/time value.
+                  (Dublin Core)
+revision          The revision number. This value might indicate the number of
+                  saves or revisions, provided the application updates it after
+                  each revision. (Open Packaging Conventions)
+subject           The topic of the content of the resource. (Dublin Core)
+title             The name given to the resource. (Dublin Core)
+version           The version designator. This value is set by the user or by
+                  the application. (Open Packaging Conventions)
+
+If the subfield is a date/time value (created, modified, last_printed) the     
+following attributes are available in dot notation (e.g. {docx:created.year}): 
+
+Attribute  Description
+date       ISO date, e.g. 2020-03-22
+year       4-digit year, e.g. 2021
+yy         2-digit year, e.g. 21
+month      Month name as locale's full name, e.g. December
+mon        Month as locale's abbreviated name, e.g. Dec
+mm         2-digit month, e.g. 12
+dd         2-digit day of the month, e.g. 22
+dow        Day of the week as locale's full name, e.g. Tuesday
+doy        Julian day of year starting from 001
+hour       2-digit hour, e.g. 10
+min        2-digit minute, e.g. 15
+sec        2-digit second, e.g. 30
+strftime   Apply strftime template to date/time. Should be used in form
+           {docx:created.strftime,TEMPLATE} where TEMPLATE is a valid strftime
+           template, e.g. {docx:created.strftime,%Y-%U} would result in year-
+           week number of year: '2020-23'. If used with no template will return
+           null value. See https://strftime.org/ for help on strftime
+           templates.
+
 Punctuation Fields                                                             
 
 Field           Description
@@ -572,7 +657,3 @@ punctuation into the rendered template value, you can use these punctuation
 fields to do so. For example, {openbrace}value{closebrace} will render to      
 {value}.                                                                       
 ```
-
-## Contributions
-
-Contributions of all kinds are welcome!  If you find a bug or have an idea to improve autofile, please [open an issue](https://github.com/RhetTbull/autofile/issues)!

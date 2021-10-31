@@ -54,7 +54,7 @@ setup(
     install_requires=[
         "click==8.0.1,<9.0.0",
         "cloup>=0.11.0,<0.12.0",
-        "osxmetadata>=0.99.33,<1.0.0",
+        "osxmetadata>=0.99.34,<1.0.0",
         "pathvalidate>=2.5.0,<3.0.0",
         "pluggy>=1.0.0,<=2.0.0",
         "pyobjc-core>=7.3,<8.0",
