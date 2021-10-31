@@ -116,6 +116,8 @@ TEST_DATA = [
     [DOC_FILE_2, "{docx:subject}", ["_"]],
     [DOC_FILE_2, "{docx:title}", ["_"]],
     [DOC_FILE_2, "{docx:version}", ["_"]],
+    # split filter
+    [DOC_FILE_1, "{docx:keywords|split(,)|strip}", ["test", "test2"]],
 ]
 
 

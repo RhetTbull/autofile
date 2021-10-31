@@ -237,6 +237,8 @@ Valid filters are:
  • braces: Enclose value in curly braces, e.g. 'value => '{value}'.            
  • parens: Enclose value in parentheses, e.g. 'value' => '(value')             
  • brackets: Enclose value in brackets, e.g. 'value' => '[value]'              
+ • split(delim): Split value into a list of values using delim as delimiter,   
+   e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;)          
 
 e.g. if file keywords are ["FOO","bar"]:                                       
 

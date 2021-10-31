@@ -38,6 +38,8 @@ Valid filters are:
 - braces: Enclose value in curly braces, e.g. 'value => '{value}'.
 - parens: Enclose value in parentheses, e.g. 'value' => '(value')
 - brackets: Enclose value in brackets, e.g. 'value' => '[value]'
+- split(delim): Split value into a list of values using delim as delimiter, e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;)
+
 <!-- - shell_quote: Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.
 - function: Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxfiles/blob/master/examples/template_filter.py
 -->

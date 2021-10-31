@@ -70,12 +70,12 @@ SUBFIELD_WORD:
 Filter:
     (
     "|"-
-    (value+=FILTER_WORD['|'])?
+    (value+=FILTER_FUNCTION['|'])?
     )?
 ;
 
-FILTER_WORD:
-    /[\.\w:\/]+/
+FILTER_FUNCTION:
+    /[\.\w:\/]+(\(.*\))?/
 ;
 
 Conditional:

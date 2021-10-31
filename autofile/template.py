@@ -88,9 +88,10 @@ FILTER_VALUES = {
     "titlecase": "Convert value to title case, e.g. 'my value' => 'My Value'.",
     "capitalize": "Capitalize first word of value and convert other words to lower case, e.g. 'MY VALUE' => 'My value'.",
     "braces": "Enclose value in curly braces, e.g. 'value => '{value}'.",
-    "parens": "Enclose value in parentheses, e.g. 'value' => '(value')",
-    "brackets": "Enclose value in brackets, e.g. 'value' => '[value]'",
+    "parens": "Enclose value in parentheses, e.g. 'value' => '(value').",
+    "brackets": "Enclose value in brackets, e.g. 'value' => '[value]'.",
     "shell_quote": "Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
+    "split(str)": "Splits the value into a list using 'str' as delimiter, e.g. split(;) would split 'foo;bar' into [foo, bar]."
     # "function": "Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxphotos/blob/master/examples/template_filter.py",
 }
 
@@ -497,6 +498,15 @@ class FileTemplate:
                 value = [shlex.quote(v) for v in values]
             else:
                 value = [shlex.quote(values)] if values else []
+        elif filter_.startswith("split"):
+            delim = filter_.split("split")[1][1:-1]
+            if delim:
+                new_values = []
+                for v in values:
+                    new_values.extend(v.split(delim))
+                value = new_values
+            else:
+                value = values
         # elif filter_.startswith("function:"):
         # value = self.get_template_value_filter_function(filter_, values)
         else:
