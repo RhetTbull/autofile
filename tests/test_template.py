@@ -125,6 +125,9 @@ TEST_DATA = [
     [DOC_FILE_1, "{docx:author|upper|chomp(1)}", ["HET TURNBULL"]],
     [DOC_FILE_1, "{docx:author|upper|chomp(1)|chop(1)|split( )}", ["HET", "TURNBUL"]],
     [DOC_FILE_1, "{docx:author|chomp(0)|chomp(0)}", ["Rhet Turnbull"]],
+    # autosplit
+    [DOC_FILE_1, "{docx:identifier|autosplit}", ["test"]],
+    [DOC_FILE_1, "{docx:keywords|autosplit}", ["test", "test2"]],
 ]
 
 

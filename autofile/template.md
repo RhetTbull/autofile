@@ -39,6 +39,7 @@ Valid filters are:
 - parens: Enclose value in parentheses, e.g. 'value' => '(value').
 - brackets: Enclose value in brackets, e.g. 'value' => '[value]'.
 - split(delim): Split value into a list of values using delim as delimiter, e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;).
+- autosplit: Automatically split delimited string into separate values (for example, keyword string in docx files); will split strings delimited by comma, semicolon, or space.
 - chop(x): Remove x characters off the end of value, e.g. chop(1): 'Value' => 'Valu'.
 - chomp(x): Remove x characters from the beginning of value, e.g. chomp(1): 'Value' => 'alue'.
 
