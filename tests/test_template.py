@@ -40,14 +40,14 @@ TEST_DATA = [
     # dates and paths
     [PHOTO_FILE, "{modified.year}", ["2021"]],
     [PHOTO_FILE, "{created.year}", ["2021"]],
-    [PHOTO_FILE, "{created.mm}", ["10"]],
-    [PHOTO_FILE, "{created.date}", ["2021-10-23"]],
+    [PHOTO_FILE, "{created.mm}", ["11"]],
+    [PHOTO_FILE, "{created.date}", ["2021-11-03"]],
     [
         PHOTO_FILE,
         "{created.year}-{created.yy}-{created.month}-{created.mon}-{created.mm}-{created.dd}-{created.dow}-{created.doy}-{created.hour}-{created.min}-{created.sec}",
-        ["2021-21-October-Oct-10-23-Saturday-296-12-53-02"],
+        ["2021-21-November-Nov-11-03-Wednesday-307-05-33-33"],
     ],
-    [PHOTO_FILE, "{created.strftime,%Y-%U}", ["2021-42"]],
+    [PHOTO_FILE, "{created.strftime,%Y-%U}", ["2021-44"]],
     [PHOTO_FILE, "{filepath.name}", ["pears.jpg"]],
     [PHOTO_FILE, "{filepath.stem}", ["pears"]],
     [PHOTO_FILE, "{filepath.parent.name}", ["test_files"]],
