@@ -3,6 +3,7 @@
 import importlib
 import locale
 import pathlib
+import re
 import shlex
 from textwrap import dedent
 from typing import Dict, List, Optional, Tuple, Union
@@ -62,7 +63,7 @@ for plugin in DEFAULT_PLUGINS:
 # ensure locale set to user's locale
 locale.setlocale(locale.LC_ALL, "")
 
-OTL_GRAMMAR_MODEL = str(pathlib.Path(__file__).parent / "template.tx")
+MTL_GRAMMAR_MODEL = str(pathlib.Path(__file__).parent / "template.tx")
 """TextX metamodel for template language """
 
 # # Permitted multi-value substitutions (each of these returns None or 1 or more values)
@@ -113,7 +114,7 @@ class FileTemplateParser:
         if hasattr(self, "metamodel"):
             return
 
-        self.metamodel = metamodel_from_file(OTL_GRAMMAR_MODEL, skipws=False)
+        self.metamodel = metamodel_from_file(MTL_GRAMMAR_MODEL, skipws=False)
 
     def parse(self, template_statement):
         """Parse a template_statement string"""
@@ -159,6 +160,7 @@ class FileTemplate:
         # self.exiftool = options.exiftool or ExifToolCaching(
         #     self.filepath, exiftool=self.exiftool_path
         # )
+        self.variables = {}
 
     def render(
         self,
@@ -177,6 +179,8 @@ class FileTemplate:
 
         if type(template) is not str:
             raise TypeError(f"template must be type str, not {type(template)}")
+
+        self.variables = {}
 
         options = options or RenderOptions()
         self.options = options
@@ -314,14 +318,27 @@ class FileTemplate:
             # #         subfield,
             # #     )
 
-            # pass processing to plugins to get values
-            vals = self.hook.get_template_value(
-                filepath=self.filepath,
-                field=field,
-                subfield=subfield,
-                default=default,
-                options=self.options,
-            )
+            if field.startswith("%"):
+                # variable in form {%var}
+                vals = self.variables.get(field[1:], None)
+                if vals is None:
+                    raise SyntaxError(f"Variable '{field[1:]}' is not defined.")
+            elif field == "var":
+                if not subfield or not default:
+                    raise SyntaxError(
+                        "var must have a subfield and value in form {var:subfield,value}"
+                    )
+                self.variables[subfield] = default
+                vals = []
+            else:
+                # pass processing to plugins to get values
+                vals = self.hook.get_template_value(
+                    filepath=self.filepath,
+                    field=field,
+                    subfield=subfield,
+                    default=default,
+                    options=self.options,
+                )
 
             if vals:
                 if self.filename:
@@ -330,7 +347,9 @@ class FileTemplate:
                     vals = [sanitize_dirname(v) for v in vals]
 
             if vals is None:
-                raise UnknownFieldError(f"Unknown template field: {field}")
+                if field:
+                    raise UnknownFieldError(f"Unknown template field: {field}")
+                vals = []
 
             vals = [val for val in vals if val is not None]
 
@@ -347,7 +366,20 @@ class FileTemplate:
                 for val in vals:
                     for pair in ts.template.findreplace.pairs:
                         find = pair.find or ""
+                        find_vars = self.expand_variables(find)
+                        if len(find_vars) != 1:
+                            raise SyntaxError(
+                                f"find/replace must have a single value to find or replace: {find_vars}"
+                            )
+                        find = find_vars[0]
+
                         repl = pair.replace or ""
+                        repl_vars = self.expand_variables(repl)
+                        if len(repl_vars) != 1:
+                            raise SyntaxError(
+                                f"find/replace must have a single value to replace: {repl_vars}"
+                            )
+                        repl = repl_vars[0]
                         val = val.replace(find, repl)
                     new_vals.append(val)
                 vals = new_vals
@@ -372,20 +404,22 @@ class FileTemplate:
 
                 def comparison_test(test_function):
                     """Perform numerical comparisons using test_function; closure to capture conditional_val, vals, negation"""
-                    if len(vals) != 1 or len(conditional_value) != 1:
-                        raise ValueError(
-                            f"comparison operators may only be used with a single value: {vals} {conditional_value}"
+                    # returns True if any of the values match the condition
+                    if len(conditional_value) != 1:
+                        raise SyntaxError(
+                            f"comparison operators may only be used with a single conditional value: {conditional_value}"
                         )
                     try:
-                        match = bool(
-                            test_function(float(vals[0]), float(conditional_value[0]))
+                        match = any(
+                            bool(test_function(float(v), float(conditional_value[0])))
+                            for v in vals
                         )
                         if (match and not negation) or (negation and not match):
                             return ["True"]
                         else:
                             return []
                     except ValueError as e:
-                        raise ValueError(
+                        raise SyntaxError(
                             f"comparison operators may only be used with values that can be converted to numbers: {vals} {conditional_value}"
                         )
 
@@ -427,7 +461,8 @@ class FileTemplate:
 
             if is_bool:
                 vals = default if not vals else bool_val
-            elif not vals:
+            elif not vals and field != "var":
+                # don't assign default value if the template was variable assignment
                 vals = default or [self.none_str]
 
             pre = ts.pre or ""
@@ -449,7 +484,44 @@ class FileTemplate:
 
         return results, unmatched
 
+    def expand_variables(self, value: str) -> List[str]:
+        """Expand variables in value"""
+        # replace any variables with their values
+        values = [value]
+        new_values = []
+        # allow %% to escape %, match variables in form %var
+        variable_match = re.compile(r"(?:%%)*(%[\w]+)?")
+        while True:
+            for value in values:
+                match = variable_match.search(value)
+                if not match or not match.group(1):
+                    break
+                var = match.group(1)
+                var_name = var[1:]
+                if var_name not in self.variables:
+                    raise SyntaxError(f"Variable '{var_name}' is not defined.")
+                for val in values:
+                    for var_val in self.variables[var_name]:
+                        new_values.append(
+                            re.sub(r"(%%)*" + f"{var}", r"\g<1>" + var_val, val)
+                        )
+            if new_values == values or not new_values:
+                break
+            values = new_values.copy()
+            new_values = []
+        return values
+
     def get_template_value_filter(self, filter_, values):
+        if re.search(r"\(.*\)", filter_):
+            # filter has arguments
+            filter_, args = filter_.split("(", 1)
+            args = args.rstrip(")")
+            args = self.expand_variables(args)
+            if len(args) != 1:
+                raise SyntaxError(f"Filter arguments must be a single value: {args}")
+            args = args[0]
+        else:
+            args = None
         if filter_ == "lower":
             if values and type(values) == list:
                 value = [v.lower() for v in values]
@@ -495,9 +567,9 @@ class FileTemplate:
                 value = [shlex.quote(v) for v in values]
             else:
                 value = [shlex.quote(values)] if values else []
-        elif filter_.startswith("split"):
+        elif filter_ == "split":
             # split on delimiter
-            delim = filter_.split("split")[1][1:-1]
+            delim = args
             if delim:
                 new_values = []
                 for v in values:
@@ -505,21 +577,21 @@ class FileTemplate:
                 value = new_values
             else:
                 value = values
-        elif filter_.startswith("chop"):
+        elif filter_ == "chop":
             # chop off characters from the end
-            chop = filter_.split("chop")[1][1:-1]
+            chop = args
             try:
                 chop = int(chop)
             except ValueError:
-                raise ValueError(f"Invalid value for chop: {chop}")
+                raise SyntaxError(f"Invalid value for chop: {chop}")
             value = [v[:-chop] for v in values] if chop else values
-        elif filter_.startswith("chomp"):
+        elif filter_ == "chomp":
             # chop off characters from the beginning
-            chomp = filter_.split("chomp")[1][1:-1]
+            chomp = args
             try:
                 chomp = int(chomp)
             except ValueError:
-                raise ValueError(f"Invalid value for chomp: {chomp}")
+                raise SyntaxError(f"Invalid value for chomp: {chomp}")
             value = [v[chomp:] for v in values] if chomp else values
         elif filter_ == "autosplit":
             # try to split keyword strings automatically
@@ -531,7 +603,7 @@ class FileTemplate:
         # elif filter_.startswith("function:"):
         # value = self.get_template_value_filter_function(filter_, values)
         else:
-            raise ValueError(f"Unhandled filter: {filter_}")
+            raise SyntaxError(f"Unhandled filter: {filter_}")
         return value
 
 

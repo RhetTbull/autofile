@@ -12,7 +12,7 @@ from freezegun import freeze_time
 import autofile
 from autofile.pathlibutil import PathlibUtil
 from autofile.renderoptions import RenderOptions
-from autofile.template import FileTemplate
+from autofile.template import FileTemplate, SyntaxError
 
 PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"
@@ -128,6 +128,45 @@ TEST_DATA = [
     # autosplit
     [DOC_FILE_1, "{docx:identifier|autosplit}", ["test"]],
     [DOC_FILE_1, "{docx:keywords|autosplit}", ["test", "test2"]],
+    # variables
+    [DOC_FILE_1, "{var:foo,BAR}{%foo}", ["BAR"]],
+    [DOC_FILE_1, "{var:bar,FOO}{var:foo,BAR}{%foo[%foo,%bar]}", ["FOO"]],
+    [DOC_FILE_1, "{var:space, }{docx:author|split(%space)}", ["Rhet", "Turnbull"]],
+    [DOC_FILE_1, "{var:pipe,|}{docx:author[ ,%pipe]}", ["Rhet|Turnbull"]],
+    [
+        DOC_FILE_1,
+        "{var:name,Rhet}{docx:author contains {%name}?{%name},Not-{%name}}",
+        ["Rhet"],
+    ],
+    [
+        DOC_FILE_1,
+        "{var:name,Rhet}{docx:author not contains {%name}?{%name},Not-{%name}}",
+        ["Not-Rhet"],
+    ],
+    # operators
+    [DOC_FILE_1, "{docx:author contains Rhet?YES,NO}", ["YES"]],
+    [DOC_FILE_1, "{docx:author not contains Rhet?YES,NO}", ["NO"]],
+    [DOC_FILE_1, "{docx:author matches Rhet Turnbull?YES,NO}", ["YES"]],
+    [DOC_FILE_1, "{docx:author matches John Doe?YES,NO}", ["NO"]],
+    [DOC_FILE_1, "{docx:author not matches John Doe?YES,NO}", ["YES"]],
+    [DOC_FILE_1, "{docx:author startswith Rhet?YES,NO}", ["YES"]],
+    [DOC_FILE_1, "{docx:author startswith John?YES,NO}", ["NO"]],
+    [DOC_FILE_1, "{docx:author not startswith John?YES,NO}", ["YES"]],
+    [DOC_FILE_1, "{docx:author endswith Turnbull?YES,NO}", ["YES"]],
+    [DOC_FILE_1, "{docx:author endswith Rhet?YES,NO}", ["NO"]],
+    [DOC_FILE_1, "{docx:author not endswith Rhet?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate <= 320?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate <= 0?YES,NO}", ["NO"]],
+    [AUDIO_FILE, "{audio:bitrate >= 320?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate >= 540?YES,NO}", ["NO"]],
+    [AUDIO_FILE, "{audio:bitrate < 320?YES,NO}", ["NO"]],
+    [AUDIO_FILE, "{audio:bitrate not < 320?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate > 320?YES,NO}", ["NO"]],
+    [AUDIO_FILE, "{audio:bitrate > 0?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate == 320?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate == 0?YES,NO}", ["NO"]],
+    [AUDIO_FILE, "{audio:bitrate != 0?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate != 320?YES,NO}", ["NO"]],
 ]
 
 
@@ -208,3 +247,12 @@ def test_template_filedates_now(setlocale):
     assert rendered == ["2021-10-29T05:39:00.012345-07:00"]
     rendered, _ = template.render("{now}", options=RenderOptions())
     assert rendered == ["2021-10-29T05:39:00.012345-07:00"]
+
+
+def test_template_var_error():
+    """Test template var error"""
+    template = FileTemplate(PHOTO_FILE)
+    with pytest.raises(SyntaxError):
+        template.render("{var:foo}", options=RenderOptions())
+    with pytest.raises(SyntaxError):
+        template.render("{%bar}", options=RenderOptions())

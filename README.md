@@ -123,7 +123,7 @@ Contributions of all kinds are welcome!  If you find a bug or have an idea to im
 $ autofile --help
 Usage: autofile [OPTIONS] FILES...
 
-  move or copy files into directories based on a template string
+  move or copy files into directories based on a metadata template string
 
 Required: [all required]
   -t, --target TARGET_DIRECTORY  Target destination directory.
@@ -174,8 +174,8 @@ Template System
 
 autofile contains a rich templating system which allows fine-grained control   
 over the output format of metadata. The templating system converts one or      
-template statements, written in autofile templating language, to one or more   
-rendered values using metadata information from the file being processed.      
+template statements, written in metadata templating language (MTL), to one or  
+more rendered values using metadata information from the file being processed. 
 
 In its simplest form, a template statement has the form: "{template_field}",   
 for example "{size}" which resolves to the size of the file. Template fields   
@@ -204,6 +204,8 @@ special punctuation templates like {comma} to insert punctuation where needed.
 For example: {exiftool:Make}{comma}{exiftool:Model} could resolve to           
 Apple,iPhone SE.                                                               
 
+Delimiter                                                                      
+
 delim: optional delimiter string to use when expanding multi-valued template   
 values in-place                                                                
 
@@ -220,6 +222,8 @@ e.g. if image file keywords are ["foo","bar"]:
 template_field: The template field to resolve.                                 
 
 :subfield: Templates may have sub-fields; reserved for future use.             
+
+Filters                                                                        
 
 |filter: You may optionally append one or more filter commands to the end of   
 the template field using the vertical pipe ('|') symbol.  Filters may be       
@@ -239,10 +243,15 @@ Valid filters are:
  • brackets: Enclose value in brackets, e.g. 'value' => '[value]'.             
  • split(delim): Split value into a list of values using delim as delimiter,   
    e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;).         
+ • autosplit: Automatically split delimited string into separate values (for   
+   example, keyword string in docx files); will split strings delimited by     
+   comma, semicolon, or space, e.g. 'value1,value2' => ['value1', 'value2'].   
  • chop(x): Remove x characters off the end of value, e.g. chop(1): 'Value' => 
-   'Valu'.                                                                     
+   'Valu'; when applied to a list, chops characters from each list value, e.g. 
+   chop(1): ["travel", "beach"]=> ["trave", "beac"].                           
  • chomp(x): Remove x characters from the beginning of value, e.g. chomp(1):   
-   'Value' => 'alue'.                                                          
+   ['Value'] => ['alue']; when applied to a list, removes characters from each 
+   list value, e.g. chomp(1): ["travel", "beach"]=> ["ravel", "each"].         
 
 e.g. if file keywords are ["FOO","bar"]:                                       
 
@@ -255,12 +264,16 @@ e.g. if an image file description is "my description":
 
  • "{exiftool:Description|titlecase}" renders to: "My Description"             
 
+Find/Replace                                                                   
+
 [find,replace]: optional text replacement to perform on rendered template      
 value.  For example, to replace "/" in a a keyword, you could use the template 
 "{exiftool:Keywords[/,-]}".  Multiple replacements can be made by appending "|"
 and adding another find|replace pair.  e.g. to replace both "/" and ":" in     
 keywords: "{exiftool:Keywords[/,-|:,-]}".  find/replace pairs are not limited  
 to single characters.  The "|" character cannot be used in a find/replace pair.
+
+Conditional Operators                                                          
 
 conditional: optional conditional expression that is evaluated as boolean      
 (True/False) for use with the ?bool_value modifier.  Conditional expressions   
@@ -299,6 +312,8 @@ For example:
    the comparison so this resolves to True if there is no keyword that matches 
    'beach'.                                                                    
 
+Boolean Values                                                                 
+
 ?bool_value: Template fields may be evaluated as boolean (True/False) by       
 appending "?" after the field name or "[find/replace]".  If a field is True or 
 has any value, the value following the "?" will be used to render the template 
@@ -316,6 +331,8 @@ and if it does not have a title:
  • "{audio:title?I have a title,I do not have a title}" renders to "I do not   
    have a title"                                                               
 
+Default Values                                                                 
+
 ,default: optional default value to use if the template name has no value.     
 This modifier is also used for the value if False for boolean-type fields (see 
 above) as well as to hold a sub-template for values like {created.strftime}.   
@@ -329,16 +346,40 @@ e.g., if file date is 4 February 2020, 19:07:38,
 
  • "{created.strftime,%Y-%m-%d-%H%M%S}" renders to "2020-02-04-190738"         
 
+Special Characters                                                             
+
 If you want to include "{" or "}" in the output, use "{openbrace}" or          
 "{closebrace}" template substitution.                                          
 
 e.g. "{created.year}/{openbrace}{audio.title}{closebrace}" would result in     
 "2020/{file Title}".                                                           
 
+Field Attributes                                                               
+
 Some templates have additional modifiers that can be appended to the template  
-name to access specific attributes of the template field. For example, the     
-{filepath} template returns the path of the file being processed and           
-{filepath.parent} returns the parent directory.                                
+name using dot notation to access specific attributes of the template field.   
+For example, the {filepath} template returns the path of the file being        
+processed and {filepath.parent} returns the parent directory.                  
+
+Variables                                                                      
+
+You can define variables for later use in the template string using the format 
+{var:NAME,VALUE}.  Variables may then be referenced using the format %NAME. For
+example: {var:foo,bar} defines the variable %foo to have value bar. This can be
+useful if you want to re-use a complex template value in multiple places within
+your template string or for allowing the use of characters that would otherwise
+be prohibited in a template string. For example, the "pipe" (|) character is   
+not allowed in a find/replace pair but you can get around this limitation like 
+so: {var:pipe,|}{audio:title[-,%pipe]} which replaces the - character with |   
+(the value of %pipe).  Variables can also be referenced as fields in the       
+template string, for example:                                                  
+{var:year,created.year}{filepath.stem}-{%year}{filepath.suffix}. In some cases,
+use of variables can make your template string more readable.  Variables can be
+used as template fields, as values for filters, as values for conditional      
+operations, or as default values.  When used as a conditional value or default 
+value, variables should be treated like any other field and enclosed in braces 
+as conditional and default values are evaluated as template strings. For       
+example: {var:name,John}{docx:author contains {%name}?{%name},Not-{%name}}     
 
 File Information Fields                                                        
 

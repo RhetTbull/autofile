@@ -1,11 +1,11 @@
-// Adapted from OSXPhotos Template Language (OTL)
+// Adapted from OSXPhotos Metadata Template Language (MTL)
 // a TemplateString has format:
 // pre{delim+template_field:subfield|filter[find,replace] conditional?bool_value,default}post
 // a TemplateStatement may contain zero or more TemplateStrings
 // The pre and post are optional strings
 // The template itself (inside the {}) is also optional but if present
 // everything but template_field is also optional
-// This is identical to OTL with exception of path_sep which has been removed
+// This is identical to OSXPhotos MTL with exception of path_sep which has been removed
 
 Statement:
     (template_strings+=TemplateString)?
@@ -52,7 +52,7 @@ Field:
 ;
 
 FIELD_WORD:
-    /[\.\w]+/
+    /[\%]?[\.\w]+/
 ;
 
 SubField:
@@ -95,14 +95,6 @@ NEGATION:
 OPERATOR:
     "contains" | "matches" | "startswith" | "endswith" | "<=" | ">=" | "<" | ">" | "==" | "!="
 ;
-
-// PathSep:
-//   (
-//    "("
-//    (value=/[^\(\)\{\}]{0,1}/)?
-//    ")"
-//    )?
-// ;
 
 FindReplace:
     (

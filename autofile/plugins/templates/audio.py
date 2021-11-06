@@ -87,7 +87,7 @@ def get_template_value(
                 raise ValueError("subfield must be specified for audio field")
             if subfield not in SUBFIELDS:
                 raise ValueError(f"Unknown audio subfield: {subfield}")
-            vals = getattr(tag, subfield)
+            vals = str(getattr(tag, subfield))
         return [vals]
     except TinyTagException as e:
         autofile.cli.print_warning(

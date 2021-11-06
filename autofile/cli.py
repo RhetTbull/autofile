@@ -246,7 +246,7 @@ def cli(
     filter_template,
     files,
 ):
-    """move or copy files into directories based on a template string"""
+    """move or copy files into directories based on a metadata template string"""
 
     # used to control whether to print out verbose output
     global _verbose
