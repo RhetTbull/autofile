@@ -23,6 +23,7 @@ PUNCTUATION = {
     "comma": ",",
     "semicolon": ";",
     "pipe": "|",
+    "percent": "%",
     "openbrace": "{",
     "closebrace": "}",
     "openparens": "(",
@@ -130,6 +131,13 @@ TEST_DATA = [
     [DOC_FILE_1, "{docx:keywords|autosplit}", ["test", "test2"]],
     # variables
     [DOC_FILE_1, "{var:foo,BAR}{%foo}", ["BAR"]],
+    [DOC_FILE_1, "{docx:author[ ,%%]}", ["Rhet%Turnbull"]],  # test escape of %
+    [DOC_FILE_1, "{docx:author[ ,%%%%]}", ["Rhet%%Turnbull"]],  # test escape of %
+    [
+        DOC_FILE_1,
+        "{docx:author contains Rhet?{docx:author}{percent},{docx:author}}",
+        ["Rhet Turnbull%"],
+    ],
     [DOC_FILE_1, "{var:bar,FOO}{var:foo,BAR}{%foo[%foo,%bar]}", ["FOO"]],
     [DOC_FILE_1, "{var:space, }{docx:author|split(%space)}", ["Rhet", "Turnbull"]],
     [DOC_FILE_1, "{var:pipe,|}{docx:author[ ,%pipe]}", ["Rhet|Turnbull"]],
@@ -167,6 +175,18 @@ TEST_DATA = [
     [AUDIO_FILE, "{audio:bitrate == 0?YES,NO}", ["NO"]],
     [AUDIO_FILE, "{audio:bitrate != 0?YES,NO}", ["YES"]],
     [AUDIO_FILE, "{audio:bitrate != 320?YES,NO}", ["NO"]],
+    [PHOTO_FILE, "{exiftool:IPTC:Keywords contains pears?YES,NO}", ["YES"]],
+    [PHOTO_FILE, "{exiftool:IPTC:Keywords not contains pears?YES,NO}", ["NO"]],
+    [
+        PHOTO_FILE,
+        "{exiftool:IPTC:Keywords startswith pea?YES,NO}",
+        ["YES"],
+    ],  # match pears
+    [
+        PHOTO_FILE,
+        "{exiftool:IPTC:Keywords endswith uit?YES,NO}",
+        ["YES"],
+    ],  # match fruit
 ]
 
 

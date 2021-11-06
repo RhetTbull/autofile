@@ -80,7 +80,7 @@ e.g. if an image file description is "my description":
 - `==`: template field equals value
 - `!=`: template field does not equal value
 
-The `value` part of the conditional expression is treated as a bare (unquoted) word/phrase.  Multiple values may be separated by '|' (the pipe symbol).  `value` is itself a template statement so you can use one or more template fields in `value` which will be resolved before the comparison occurs.
+Multiple values may be separated by '|' (the pipe symbol).  `value` is itself a template statement so you can use one or more template fields in `value` which will be resolved before the comparison occurs. When applied to multi-valued fields (ie. lists), the comparison is applied to each value in the list and evaluates to True if *any* of the values match.
 
 For example:
 
@@ -89,6 +89,8 @@ For example:
 - `{ISO < 100}` resolves to True if the file's ISO is < 100.
 - `{exiftool:Keywords|lower contains beach}` uses the lower case filter to do case-insensitive matching to match any keyword that contains the word 'beach'.
 - `{exiftool:Keywords|lower not contains beach}` uses the `not` modifier to negate the comparison so this resolves to True if there is no keyword that matches 'beach'.
+- `{docx:author startswith John}` resolves to True if the author of a docx file starts with 'John'.
+- `{audo:bitrate == 320}` resolves to True if the audio file's bitrate is 320 kbps.
 
 **Boolean Values**
 
@@ -124,4 +126,10 @@ Some templates have additional modifiers that can be appended to the template na
 
 **Variables**
 
-You can define variables for later use in the template string using the format `{var:NAME,VALUE}`.  Variables may then be referenced using the format `%NAME`. For example: `{var:foo,bar}` defines the variable `%foo` to have value `bar`. This can be useful if you want to re-use a complex template value in multiple places within your template string or for allowing the use of characters that would otherwise be prohibited in a template string. For example, the "pipe" (`|`) character is not allowed in a find/replace pair but you can get around this limitation like so: `{var:pipe,|}{audio:title[-,%pipe]}` which replaces the `-` character with `|` (the value of `%pipe`).  Variables can also be referenced as fields in the template string, for example: `{var:year,created.year}{filepath.stem}-{%year}{filepath.suffix}`. In some cases, use of variables can make your template string more readable.  Variables can be used as template fields, as values for filters, as values for conditional operations, or as default values.  When used as a conditional value or default value, variables should be treated like any other field and enclosed in braces as conditional and default values are evaluated as template strings. For example: `{var:name,John}{docx:author contains {%name}?{%name},Not-{%name}}`
+You can define variables for later use in the template string using the format `{var:NAME,VALUE}`.  Variables may then be referenced using the format `%NAME`. For example: `{var:foo,bar}` defines the variable `%foo` to have value `bar`. This can be useful if you want to re-use a complex template value in multiple places within your template string or for allowing the use of characters that would otherwise be prohibited in a template string. For example, the "pipe" (`|`) character is not allowed in a find/replace pair but you can get around this limitation like so: `{var:pipe,|}{audio:title[-,%pipe]}` which replaces the `-` character with `|` (the value of `%pipe`).  
+
+Variables can also be referenced as fields in the template string, for example: `{var:year,created.year}{filepath.stem}-{%year}{filepath.suffix}`. In some cases, use of variables can make your template string more readable.  Variables can be used as template fields, as values for filters, as values for conditional operations, or as default values.  When used as a conditional value or default value, variables should be treated like any other field and enclosed in braces as conditional and default values are evaluated as template strings. For example: `{var:name,John}{docx:author contains {%name}?{%name},Not-{%name}}
+
+If you need to use a `%` (percent sign character), you can escape the percent sign by using `%%`.  You can also use the `{percent}` template field where a template field is required. For example:
+
+`{audio:title[:,%%]}` replaces the `:` with `%` and `{audio:title contains Foo?{audio:title}{percent},{audio:title}}` adds `%` to the audio title if it contains `Foo`. 

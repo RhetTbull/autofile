@@ -509,6 +509,11 @@ class FileTemplate:
                 break
             values = new_values.copy()
             new_values = []
+
+        # replace %% with %
+        # any %% left in the string will be replaced with %
+        values = [value.replace("%%", "%") for value in values]
+
         return values
 
     def get_template_value_filter(self, filter_, values):
