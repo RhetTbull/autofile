@@ -151,9 +151,24 @@ def get_pdf_property(
     value = metadata.get(subfield_mapping, None)
     if not value:
         return None
+
     if subfield in DATETIME_SUBFIELDS:
-        return pdf_date_to_datetime(value.decode("utf-8"))
-    return value.decode("utf-8")
+        return pdf_date_to_datetime(decode_pdf_field(value))
+    return decode_pdf_field(value)
+
+
+def decode_pdf_field(field: Any) -> str:
+    """decode pdf metadata field from binary unicode to str"""
+    # XMP Spec says that PDF metadata fields are encoded in UTF-8, but
+    # that is not always the case so this tries various encodings to find one that works
+    for encoding in ("utf-8", "utf-16", "utf-32"):
+        try:
+            value = field.decode(encoding)
+        except UnicodeDecodeError:
+            pass
+        else:
+            return value
+    return field.decode("utf-8", errors="ignore")
 
 
 def get_pdf_metadata_info(pdfpath: str) -> dict:
