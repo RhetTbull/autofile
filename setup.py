@@ -56,6 +56,7 @@ setup(
         "cloup>=0.11.0,<0.12.0",
         "osxmetadata>=0.99.34,<1.0.0",
         "pathvalidate>=2.5.0,<3.0.0",
+        "pdfminer.six>=20211012",
         "pluggy>=1.0.0,<=2.0.0",
         "pyobjc-core>=7.3,<8.0",
         "pyobjc-framework-Cocoa>=7.3,<8.0",

@@ -34,6 +34,7 @@ class SyntaxError(Exception):
 DEFAULT_PLUGINS = (
     "autofile.plugins.templates.punctuation",
     "autofile.plugins.templates.docx",
+    "autofile.plugins.templates.pdf",
     "autofile.plugins.templates.exiftool",
     "autofile.plugins.templates.audio",
     "autofile.plugins.templates.uti",

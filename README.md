@@ -621,6 +621,48 @@ strftime   Apply strftime template to date/time. Should be used in form
            number of year: '2020-23'. If used with no template will return null
            value. See https://strftime.org/ for help on strftime templates.
 
+Adobe PDF Document Fields                                                      
+
+Field  Description
+{pdf}  Access metadata properties of Adobe PDF files (.pdf); use in format
+       {pdf:SUBFIELD}
+
+Access metadata properties of Adobe PDF files (.pdf). Use in format            
+{pdf:SUBFIELD} where SUBFIELD is one of the following:                         
+
+Subfield  Description
+author    Author of the document.
+creator   The application that created the document.
+producer  The application the produced the PDF (may be different than creator).
+created   Date of creation of the document; a date/time value.
+modified  Date on which the document was changed; a date/time value.
+subject   The topic of the content of the document.
+title     The name given to the document.
+keywords  Keywords associated with the document; a string of delimited words.
+
+If the subfield is a date/time value (created, modified) the following         
+attributes are available in dot notation (e.g. {pdf:created.year}):            
+
+Attribute  Description
+date       ISO date, e.g. 2020-03-22
+year       4-digit year, e.g. 2021
+yy         2-digit year, e.g. 21
+month      Month name as locale's full name, e.g. December
+mon        Month as locale's abbreviated name, e.g. Dec
+mm         2-digit month, e.g. 12
+dd         2-digit day of the month, e.g. 22
+dow        Day of the week as locale's full name, e.g. Tuesday
+doy        Julian day of year starting from 001
+hour       2-digit hour, e.g. 10
+min        2-digit minute, e.g. 15
+sec        2-digit second, e.g. 30
+strftime   Apply strftime template to date/time. Should be used in form
+           {docx:created.strftime,TEMPLATE} where TEMPLATE is a valid strftime
+           template, e.g. {docx:created.strftime,%Y-%U} would result in year-
+           week number of year: '2020-23'. If used with no template will return
+           null value. See https://strftime.org/ for help on strftime
+           templates.
+
 Microsoft Word Document Fields                                                 
 
 Field   Description

@@ -18,6 +18,8 @@ PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"
 DOC_FILE_1 = "tests/test_files/test1_data.docx"
 DOC_FILE_2 = "tests/test_files/test2_no_data.docx"
+PDF_FILE_1 = "tests/test_files/test_pdf.pdf"
+PDF_FILE_2 = "tests/test_files/test_pdf_blank_metadata.pdf"
 
 PUNCTUATION = {
     "comma": ",",
@@ -187,6 +189,23 @@ TEST_DATA = [
         "{exiftool:IPTC:Keywords endswith uit?YES,NO}",
         ["YES"],
     ],  # match fruit
+    # pdf files
+    [PDF_FILE_1, "{pdf:title}", ["Test Document"]],
+    [PDF_FILE_1, "{pdf:subject}", ["Testing"]],
+    [PDF_FILE_1, "{pdf:author}", ["Rhet Turnbull"]],
+    [
+        PDF_FILE_1,
+        "{pdf:producer}",
+        ["macOS Version 10.15.7 (Build 19H1419) Quartz PDFContext"],
+    ],
+    [PDF_FILE_1, "{pdf:creator}", ["TextEdit"]],
+    [PDF_FILE_1, "{pdf:created}", ["2021-11-07T14:50:06+00:00"]],
+    [PDF_FILE_1, "{pdf:modified}", ["2021-11-07T14:50:06+00:00"]],
+    [PDF_FILE_1, "{pdf:keywords}", ["test, pdf, document"]],
+    [PDF_FILE_1, "{pdf:keywords|autosplit}", ["test", "pdf", "document"]],
+    [PDF_FILE_1, "{pdf:created.year}", ["2021"]],
+    [PDF_FILE_1, "{pdf:modified.mm}", ["11"]],
+    [PDF_FILE_2, "{pdf:author}", ["_"]],
 ]
 
 
