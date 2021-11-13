@@ -12,7 +12,7 @@ from freezegun import freeze_time
 import autofile
 from autofile.pathlibutil import PathlibUtil
 from autofile.renderoptions import RenderOptions
-from autofile.template import FileTemplate, SyntaxError
+from autofile.filetemplate import FileTemplate, SyntaxError
 
 PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"

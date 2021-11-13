@@ -7,7 +7,7 @@ from typing import Callable, List, Optional
 from .constants import NONE_STR_SENTINEL
 from .pathlibutil import PathlibUtil
 from .renderoptions import RenderOptions
-from .template import FileTemplate, UnknownFieldError
+from .filetemplate import FileTemplate, UnknownFieldError
 from .utils import noop
 
 

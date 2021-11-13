@@ -64,7 +64,7 @@ for plugin in DEFAULT_PLUGINS:
 # ensure locale set to user's locale
 locale.setlocale(locale.LC_ALL, "")
 
-MTL_GRAMMAR_MODEL = str(pathlib.Path(__file__).parent / "template.tx")
+MTL_GRAMMAR_MODEL = str(pathlib.Path(__file__).parent / "mtlparser.tx")
 """TextX metamodel for template language """
 
 # # Permitted multi-value substitutions (each of these returns None or 1 or more values)

@@ -38,7 +38,7 @@ from ._version import __version__
 from .autofile import MultipleFilesError, process_files
 from .constants import APP_NAME
 from .renderoptions import RenderOptions
-from .template import get_template_help
+from .filetemplate import get_template_help
 from .utils import bold, green, pluralize, red
 
 # Set up rich console
@@ -250,7 +250,7 @@ def cli(
 
     # used to control whether to print out verbose output
     global _verbose
-    _verbose = not quiet 
+    _verbose = not quiet
 
     if plain:
         # Plain text mode, disable rich output (used for testing)
