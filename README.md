@@ -395,6 +395,57 @@ template field is required. For example:
 Foo?{audio:title}{percent},{audio:title}} adds % to the audio title if it      
 contains Foo.                                                                  
 
+Punctuation Fields                                                             
+
+Field           Description
+{comma}         A comma: ','
+{semicolon}     A semicolon: ';'
+{questionmark}  A question mark: '?'
+{pipe}          A vertical pipe: '|'
+{percent}       A percent sign: '%'
+{openbrace}     An open brace: '{'
+{closebrace}    A close brace: '}'
+{openparens}    An open parentheses: '('
+{closeparens}   A close parentheses: ')'
+{openbracket}   An open bracket: '['
+{closebracket}  A close bracket: ']'
+{newline}       A newline: '\n'
+{lf}            A line feed: '\n', alias for {newline}
+{cr}            A carriage return: '\r'
+{crlf}          a carriage return + line feed: '\r\n'
+
+Within the template system, many punctuation characters have special meaning,  
+e.g. {} indicates a template field and this means that some punctuation        
+characters cannot be inserted into the template. Thus, if you want to insert   
+punctuation into the rendered template value, you can use these punctuation    
+fields to do so. For example, {openbrace}value{closebrace} will render to      
+{value}.                                                                       
+
+String Formatting Fields                                                       
+
+Field     Description
+{strip}   Use in form '{strip,TEMPLATE}'; strips whitespace from begining and
+          end of rendered TEMPLATE value(s).
+{format}  Use in form, '{format:TYPE:FORMAT,TEMPLATE}'; converts TEMPLATE value
+          to TYPE then formats the value using python string formatting codes
+          specified by FORMAT; TYPE is one of: 'int', 'float', or 'str'.
+
+The {strip} and {format} fields are used to format strings. {strip,TEMPLATE}   
+strips whitespace from TEMPLATE. For example, {strip,{exiftool:Title}} will    
+strip any excess whitespace from the title of an image file.                   
+
+{format:TYPE:FORMAT,TEMPLATE} formats TEMPLATE using python string formatting  
+codes. For example:                                                            
+
+ • {format:int:02d,{audio:track}} will format the track number of an audio file
+   to two digits with leading zeros.                                           
+ • {format:str:-^30,{audio.title}} will center the title of an audio file and  
+   pad it to 30 characters with '-'.                                           
+
+TYPE must be one of 'int', 'float', or 'str'. See                              
+https://docs.python.org/3.7/library/string.html#formatspec for more information
+on valid FORMAT values.                                                        
+
 File Information Fields                                                        
 
 Field    Description
@@ -474,31 +525,6 @@ name      The name of the file
 stem      The name of the file without the suffix (extension)
 suffix    The suffix (extension) of the file, including the leading `.`
 parent    The parent directory of the file
-
-String Formatting Fields                                                       
-
-Field     Description
-{strip}   Use in form '{strip,TEMPLATE}'; strips whitespace from begining and
-          end of rendered TEMPLATE value(s).
-{format}  Use in form, '{format:TYPE:FORMAT,TEMPLATE}'; converts TEMPLATE value
-          to TYPE then formats the value using python string formatting codes
-          specified by FORMAT; TYPE is one of: 'int', 'float', or 'str'.
-
-The {strip} and {format} fields are used to format strings. {strip,TEMPLATE}   
-strips whitespace from TEMPLATE. For example, {strip,{exiftool:Title}} will    
-strip any excess whitespace from the title of an image file.                   
-
-{format:TYPE:FORMAT,TEMPLATE} formats TEMPLATE using python string formatting  
-codes. For example:                                                            
-
- • {format:int:02d,{audio:track}} will format the track number of an audio file
-   to two digits with leading zeros.                                           
- • {format:str:-^30,{audio.title}} will center the title of an audio file and  
-   pad it to 30 characters with '-'.                                           
-
-TYPE must be one of 'int', 'float', or 'str'. See                              
-https://docs.python.org/3.7/library/string.html#formatspec for more information
-on valid FORMAT values.                                                        
 
 macOS Metadata Fields                                                          
 
@@ -734,30 +760,4 @@ strftime   Apply strftime template to date/time. Should be used in form
            week number of year: '2020-23'. If used with no template will return
            null value. See https://strftime.org/ for help on strftime
            templates.
-
-Punctuation Fields                                                             
-
-Field           Description
-{comma}         A comma: ','
-{semicolon}     A semicolon: ';'
-{questionmark}  A question mark: '?'
-{pipe}          A vertical pipe: '|'
-{percent}       A percent sign: '%'
-{openbrace}     An open brace: '{'
-{closebrace}    A close brace: '}'
-{openparens}    An open parentheses: '('
-{closeparens}   A close parentheses: ')'
-{openbracket}   An open bracket: '['
-{closebracket}  A close bracket: ']'
-{newline}       A newline: '\n'
-{lf}            A line feed: '\n', alias for {newline}
-{cr}            A carriage return: '\r'
-{crlf}          a carriage return + line feed: '\r\n'
-
-Within the template system, many punctuation characters have special meaning,  
-e.g. {} indicates a template field and this means that some punctuation        
-characters cannot be inserted into the template. Thus, if you want to insert   
-punctuation into the rendered template value, you can use these punctuation    
-fields to do so. For example, {openbrace}value{closebrace} will render to      
-{value}.                                                                       
 ```
