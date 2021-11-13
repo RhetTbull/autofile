@@ -190,6 +190,12 @@ def get_template_help() -> List[Union[str, List]]:
     - `{format:str:-^30,{audio.title}}` will center the title of an audio file and pad it to 30 characters with '-'.
 
     TYPE must be one of 'int', 'float', or 'str'. 
+
+    FORMAT may be a string or an variable. A variable may be helpful when you need to use a character in the format string that 
+    would otherwise not be allowed. For example, to use a comma separator, you could do this:
+    
+    `{var:commaformat,{comma}}{format:int:%commaformat,{created.year}}` which transforms "2021" to "2,021"
+ 
     See https://docs.python.org/3.7/library/string.html#formatspec for more information on valid FORMAT values.
     """
     md.append("**String Formatting Fields**")

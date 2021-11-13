@@ -207,6 +207,21 @@ TEST_DATA = [
     [PDF_FILE_1, "{pdf:created.year}", ["2021"]],
     [PDF_FILE_1, "{pdf:modified.mm}", ["11"]],
     [PDF_FILE_2, "{pdf:author}", ["_"]],
+    # format, strip
+    [AUDIO_FILE, "{format:int:04d,{audio:bitrate}}", ["0320"]],
+    [AUDIO_FILE, "{format:int:05d,{audio:bitrate}}", ["00320"]],
+    [AUDIO_FILE, "{format:str:-^11,{audio:bitrate}}", ["----320----"]],
+    [
+        DOC_FILE_1,
+        "{var:commaformat,{comma}}{format:int:%commaformat,{created.year}}",
+        ["2,021"],
+    ],
+    [
+        DOC_FILE_1,
+        "{format:int:n,{created.year}}",
+        ["2,021"],
+    ],
+    [DOC_FILE_1, "{strip,   Foo Bar   }", ["Foo Bar"]],
 ]
 
 

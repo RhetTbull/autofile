@@ -481,6 +481,12 @@ class MTLParser:
                 default = [int(v) for v in default]
             elif type_ == "float":
                 default = [float(v) for v in default]
+            format_str = self.expand_variables(format_str)
+            if len(format_str) != 1:
+                raise ValueError(
+                    f"{format} format string must be a single value, not {format_str}"
+                )
+            format_str = format_str[0]
             return [format_str_value(v, format_str) for v in default]
 
         return None
