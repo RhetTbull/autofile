@@ -1,3 +1,3 @@
 include README.md
-include autofile/template.tx
-include autofile/template.md
+include autofile/mtlparser.tx
+include autofile/filetemplate.md

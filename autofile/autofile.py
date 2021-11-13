@@ -39,7 +39,7 @@ def filter_file(
     if filter_template:
         options = RenderOptions(none_str=NONE_STR_SENTINEL)
         for pattern in filter_template:
-            results, _ = FileTemplate(filepath).render(pattern, options=options)
+            results = FileTemplate(filepath).render(pattern, options=options)
             if results and all(NONE_STR_SENTINEL not in result for result in results):
                 filter_match = True
                 break
@@ -101,7 +101,7 @@ def process_files(
 
             rendered_directories = []
             if directory_template:
-                rendered_directories, _ = FileTemplate(filename).render(
+                rendered_directories = FileTemplate(filename).render(
                     directory_template, options=dir_options
                 )
                 if len(rendered_directories) > 1 and not (any([copy, hardlink])):
@@ -109,7 +109,7 @@ def process_files(
 
             rendered_filenames = []
             if filename_template:
-                rendered_filenames, _ = FileTemplate(filename).render(
+                rendered_filenames = FileTemplate(filename).render(
                     filename_template, options=file_options
                 )
                 if (len(rendered_filenames) > 1) and not (any([copy, hardlink])):
@@ -130,9 +130,9 @@ def process_files(
             else:
                 target_paths = [target_path / file.name for target_path in target_paths]
 
+            action = "Copying" if copy else "Hardlinking" if hardlink else "Moving"
             # move, copy, or hardlink files
             for target_path in target_paths:
-                action = "Copying" if copy else "Hardlinking" if hardlink else "Moving"
                 verbose(f"{action} {file} to {target_path}")
                 if not dry_run:
                     if not target_path.parent.exists():

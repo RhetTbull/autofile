@@ -3,8 +3,6 @@
 import importlib
 import locale
 import pathlib
-import re
-import shlex
 from textwrap import dedent
 from typing import Dict, List, Optional, Tuple, Union
 
@@ -14,6 +12,7 @@ from textx import TextXSyntaxError, metamodel_from_file
 from . import hookspecs
 from ._version import __version__
 from .constants import APP_NAME
+from .mtlparser import PUNCTUATION_FIELDS, FORMAT_FIELDS, MTLParser
 from .path_utils import sanitize_dirname, sanitize_filename, sanitize_pathpart
 from .pathlibutil import PathlibUtil
 from .renderoptions import RenderOptions
@@ -32,7 +31,6 @@ class SyntaxError(Exception):
 
 
 DEFAULT_PLUGINS = (
-    "autofile.plugins.templates.punctuation",
     "autofile.plugins.templates.docx",
     "autofile.plugins.templates.pdf",
     "autofile.plugins.templates.exiftool",
@@ -40,7 +38,6 @@ DEFAULT_PLUGINS = (
     "autofile.plugins.templates.uti",
     "autofile.plugins.templates.finder",
     "autofile.plugins.templates.mdls",
-    "autofile.plugins.templates.format",
     "autofile.plugins.templates.filepath",
     "autofile.plugins.templates.filedates",
     "autofile.plugins.templates.filestat",
@@ -64,68 +61,6 @@ for plugin in DEFAULT_PLUGINS:
 # ensure locale set to user's locale
 locale.setlocale(locale.LC_ALL, "")
 
-MTL_GRAMMAR_MODEL = str(pathlib.Path(__file__).parent / "mtlparser.tx")
-"""TextX metamodel for template language """
-
-# # Permitted multi-value substitutions (each of these returns None or 1 or more values)
-# TEMPLATE_SUBSTITUTIONS_MULTI_VALUED = {
-#     # "{shell_quote}": "Use in form '{shell_quote,TEMPLATE}'; quotes the rendered TEMPLATE value(s) for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
-#     # "{function}": "Execute a python function from an external file and use return value as template substitution. "
-#     # + "Use in format: {function:file.py::function_name} where 'file.py' is the name of the python file and 'function_name' is the name of the function to call. "
-#     # + "The function will be passed the PhotoInfo object for the photo. "
-#     # + "See https://github.com/RhetTbull/osxphotos/blob/master/examples/template_function.py for an example of how to implement a template function.",
-# }
-
-
-FILTER_VALUES = {
-    "lower": "Convert value to lower case, e.g. 'Value' => 'value'.",
-    "upper": "Convert value to upper case, e.g. 'Value' => 'VALUE'.",
-    "strip": "Strip whitespace from beginning/end of value, e.g. ' Value ' => 'Value'.",
-    "titlecase": "Convert value to title case, e.g. 'my value' => 'My Value'.",
-    "capitalize": "Capitalize first word of value and convert other words to lower case, e.g. 'MY VALUE' => 'My value'.",
-    "braces": "Enclose value in curly braces, e.g. 'value => '{value}'.",
-    "parens": "Enclose value in parentheses, e.g. 'value' => '(value').",
-    "brackets": "Enclose value in brackets, e.g. 'value' => '[value]'.",
-    "shell_quote": "Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.",
-    "autosplit": "Automatically split delimited string into separate values (for example, keyword string in docx files); will split strings delimited by comma, semicolon, or space.",
-    "split(str)": "Splits the value into a list using 'str' as delimiter, e.g. split(;) would split 'foo;bar' into [foo, bar].",
-    "chop(x)": "Remove x characters off the end of value, e.g. chop(1): 'Value' => 'Valu'.",
-    "chomp(x)": "Remove x characters from the beginning of value, e.g. chomp(1): 'Value' => 'alue'.",
-    # "function": "Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxphotos/blob/master/examples/template_filter.py",
-}
-
-# PATH_SEP_DEFAULT = os.path.sep
-
-
-class FileTemplateParser:
-    """Parser for FileTemplate"""
-
-    # implemented as Singleton
-
-    def __new__(cls, *args, **kwargs):
-        """create new object or return instance of already created singleton"""
-        if not hasattr(cls, "instance") or not cls.instance:
-            cls.instance = super().__new__(cls)
-
-        return cls.instance
-
-    def __init__(self):
-        """return existing singleton or create a new one"""
-
-        if hasattr(self, "metamodel"):
-            return
-
-        self.metamodel = metamodel_from_file(MTL_GRAMMAR_MODEL, skipws=False)
-
-    def parse(self, template_statement):
-        """Parse a template_statement string"""
-        return self.metamodel.model_from_str(template_statement)
-
-    def fields(self, template_statement):
-        """Return list of fields found in a template statement; does not verify that fields are valid"""
-        model = self.parse(template_statement)
-        return [ts.template.field for ts in model.template_strings if ts.template]
-
 
 class FileTemplate:
     """FileTemplate class to render a template string from a file and it's associated metadata"""
@@ -141,9 +76,6 @@ class FileTemplate:
         self.filepath = str(filepath)
         self.hook = PM.hook
 
-        # get parser singleton
-        self.parser = FileTemplateParser()
-
         # initialize render options
         # this will be done in render() but for testing, some of the lookup functions are called directly
         options = RenderOptions()
@@ -158,10 +90,16 @@ class FileTemplate:
         self.strip = options.strip
         self.quote = options.quote
         self.dest_path = options.dest_path
-        # self.exiftool = options.exiftool or ExifToolCaching(
-        #     self.filepath, exiftool=self.exiftool_path
-        # )
-        self.variables = {}
+
+    def get_field_value(self, field, subfield, default):
+        """Get the value of a field"""
+        return self.hook.get_template_value(
+            filepath=self.filepath,
+            field=field,
+            subfield=subfield,
+            default=default,
+            options=self.options,
+        )
 
     def render(
         self,
@@ -175,13 +113,11 @@ class FileTemplate:
             options: a RenderOptions instance
 
         Returns:
-            ([rendered_strings], [unmatched]): tuple of list of rendered strings and list of unmatched template values
+            [rendered_strings]: list of rendered strings
         """
 
         if type(template) is not str:
             raise TypeError(f"template must be type str, not {type(template)}")
-
-        self.variables = {}
 
         options = options or RenderOptions()
         self.options = options
@@ -196,429 +132,73 @@ class FileTemplate:
         self.quote = options.quote
         self.dest_path = options.dest_path
 
-        try:
-            model = self.parser.parse(template)
-        except TextXSyntaxError as e:
-            raise SyntaxError(e)
+        sanitize_value = (
+            sanitize_dirname
+            if options.dirname
+            else sanitize_pathpart
+            if options.filename
+            else None
+        )
+        sanitize = sanitize_filename if options.filename else None
 
-        if not model:
-            # empty string
-            return [], []
-
-        return self._render_statement(model)
-
-    def _render_statement(
-        self,
-        statement,
-    ):
-        results = []
-        unmatched = []
-        for ts in statement.template_strings:
-            results, unmatched = self._render_template_string(
-                ts,
-                results=results,
-                unmatched=unmatched,
-            )
-
-        rendered_strings = results
-
-        if self.filename:
-            rendered_strings = [
-                sanitize_filename(rendered_str) for rendered_str in rendered_strings
-            ]
-
-        if self.strip:
-            rendered_strings = [
-                rendered_str.strip() for rendered_str in rendered_strings
-            ]
-
-        return rendered_strings, unmatched
-
-    def _render_template_string(
-        self,
-        ts,
-        results=None,
-        unmatched=None,
-    ):
-        """Render a TemplateString object"""
-
-        results = results or [""]
-        unmatched = unmatched or []
-
-        if ts.template:
-            # have a template field to process
-            field = ts.template.field
-            subfield = ts.template.subfield
-
-            # process filters
-            filters = []
-            if ts.template.filter is not None:
-                filters = ts.template.filter.value
-
-            # process delim
-            if ts.template.delim is not None:
-                # if value is None, means format was {+field}
-                delim = ts.template.delim.value or ""
-            else:
-                delim = None
-
-            if ts.template.bool is not None:
-                is_bool = True
-                if ts.template.bool.value is not None:
-                    bool_val, u = self._render_statement(
-                        ts.template.bool.value,
-                    )
-                    unmatched.extend(u)
-                else:
-                    # blank bool value
-                    bool_val = [""]
-            else:
-                is_bool = False
-                bool_val = None
-
-            # process default
-            if ts.template.default is not None:
-                # default is also a TemplateString
-                if ts.template.default.value is not None:
-                    default, u = self._render_statement(
-                        ts.template.default.value,
-                    )
-                    unmatched.extend(u)
-                else:
-                    # blank default value
-                    default = [""]
-            else:
-                default = []
-
-            # process conditional
-            if ts.template.conditional is not None:
-                operator = ts.template.conditional.operator
-                negation = ts.template.conditional.negation
-                if ts.template.conditional.value is not None:
-                    # conditional value is also a TemplateString
-                    conditional_value, u = self._render_statement(
-                        ts.template.conditional.value,
-                        # path_sep=path_sep,
-                    )
-                    unmatched.extend(u)
-                else:
-                    # this shouldn't happen
-                    conditional_value = [""]
-            else:
-                operator = None
-                negation = None
-                conditional_value = []
-
-            # vals = []
-            # # elif field == "function":
-            # #     if subfield is None:
-            # #         raise ValueError(
-            # #             "SyntaxError: filename and function must not be null with {function::filename.py:function_name}"
-            # #         )
-            # #     vals = self.get_template_value_function(
-            # #         subfield,
-            # #     )
-
-            if field.startswith("%"):
-                # variable in form {%var}
-                vals = self.variables.get(field[1:], None)
-                if vals is None:
-                    raise SyntaxError(f"Variable '{field[1:]}' is not defined.")
-            elif field == "var":
-                if not subfield or not default:
-                    raise SyntaxError(
-                        "var must have a subfield and value in form {var:subfield,value}"
-                    )
-                self.variables[subfield] = default
-                vals = []
-            else:
-                # pass processing to plugins to get values
-                vals = self.hook.get_template_value(
-                    filepath=self.filepath,
-                    field=field,
-                    subfield=subfield,
-                    default=default,
-                    options=self.options,
-                )
-
-            if vals:
-                if self.filename:
-                    vals = [sanitize_pathpart(v) for v in vals]
-                elif self.dirname:
-                    vals = [sanitize_dirname(v) for v in vals]
-
-            if vals is None:
-                if field:
-                    raise UnknownFieldError(f"Unknown template field: {field}")
-                vals = []
-
-            vals = [val for val in vals if val is not None]
-
-            if self.expand_inplace or delim is not None:
-                sep = delim if delim is not None else self.inplace_sep
-                vals = [sep.join(sorted(vals))] if vals else []
-
-            for filter_ in filters:
-                vals = self.get_template_value_filter(filter_, vals)
-
-            # process find/replace
-            if ts.template.findreplace:
-                new_vals = []
-                for val in vals:
-                    for pair in ts.template.findreplace.pairs:
-                        find = pair.find or ""
-                        find_vars = self.expand_variables(find)
-                        if len(find_vars) != 1:
-                            raise SyntaxError(
-                                f"find/replace must have a single value to find or replace: {find_vars}"
-                            )
-                        find = find_vars[0]
-
-                        repl = pair.replace or ""
-                        repl_vars = self.expand_variables(repl)
-                        if len(repl_vars) != 1:
-                            raise SyntaxError(
-                                f"find/replace must have a single value to replace: {repl_vars}"
-                            )
-                        repl = repl_vars[0]
-                        val = val.replace(find, repl)
-                    new_vals.append(val)
-                vals = new_vals
-
-            if operator:
-                # have a conditional operator
-
-                def string_test(test_function):
-                    """Perform string comparison using test_function; closure to capture conditional_value, vals, negation"""
-                    match = False
-                    for c in conditional_value:
-                        for v in vals:
-                            if test_function(v, c):
-                                match = True
-                                break
-                        if match:
-                            break
-                    if (match and not negation) or (negation and not match):
-                        return ["True"]
-                    else:
-                        return []
-
-                def comparison_test(test_function):
-                    """Perform numerical comparisons using test_function; closure to capture conditional_val, vals, negation"""
-                    # returns True if any of the values match the condition
-                    if len(conditional_value) != 1:
-                        raise SyntaxError(
-                            f"comparison operators may only be used with a single conditional value: {conditional_value}"
-                        )
-                    try:
-                        match = any(
-                            bool(test_function(float(v), float(conditional_value[0])))
-                            for v in vals
-                        )
-                        if (match and not negation) or (negation and not match):
-                            return ["True"]
-                        else:
-                            return []
-                    except ValueError as e:
-                        raise SyntaxError(
-                            f"comparison operators may only be used with values that can be converted to numbers: {vals} {conditional_value}"
-                        )
-
-                if operator in ["contains", "matches", "startswith", "endswith"]:
-                    # process any "or" values separated by "|"
-                    temp_values = []
-                    for c in conditional_value:
-                        temp_values.extend(c.split("|"))
-                    conditional_value = temp_values
-
-                if operator == "contains":
-                    vals = string_test(lambda v, c: c in v)
-                elif operator == "matches":
-                    vals = string_test(lambda v, c: v == c)
-                elif operator == "startswith":
-                    vals = string_test(lambda v, c: v.startswith(c))
-                elif operator == "endswith":
-                    vals = string_test(lambda v, c: v.endswith(c))
-                elif operator == "==":
-                    match = sorted(vals) == sorted(conditional_value)
-                    if (match and not negation) or (negation and not match):
-                        vals = ["True"]
-                    else:
-                        vals = []
-                elif operator == "!=":
-                    match = sorted(vals) != sorted(conditional_value)
-                    if (match and not negation) or (negation and not match):
-                        vals = ["True"]
-                    else:
-                        vals = []
-                elif operator == "<":
-                    vals = comparison_test(lambda v, c: v < c)
-                elif operator == "<=":
-                    vals = comparison_test(lambda v, c: v <= c)
-                elif operator == ">":
-                    vals = comparison_test(lambda v, c: v > c)
-                elif operator == ">=":
-                    vals = comparison_test(lambda v, c: v >= c)
-
-            if is_bool:
-                vals = default if not vals else bool_val
-            elif not vals and field != "var":
-                # don't assign default value if the template was variable assignment
-                vals = default or [self.none_str]
-
-            pre = ts.pre or ""
-            post = ts.post or ""
-
-            rendered = [pre + val + post for val in vals]
-            results_new = []
-            for ren in rendered:
-                for res in results:
-                    res_new = res + ren
-                    results_new.append(res_new)
-            results = results_new
-
-        else:
-            # no template
-            pre = ts.pre or ""
-            post = ts.post or ""
-            results = [r + pre + post for r in results]
-
-        return results, unmatched
-
-    def expand_variables(self, value: str) -> List[str]:
-        """Expand variables in value"""
-        # replace any variables with their values
-        values = [value]
-        new_values = []
-        # allow %% to escape %, match variables in form %var
-        variable_match = re.compile(r"(?:%%)*(%[\w]+)?")
-        while True:
-            for value in values:
-                match = variable_match.search(value)
-                if not match or not match.group(1):
-                    break
-                var = match.group(1)
-                var_name = var[1:]
-                if var_name not in self.variables:
-                    raise SyntaxError(f"Variable '{var_name}' is not defined.")
-                for val in values:
-                    for var_val in self.variables[var_name]:
-                        new_values.append(
-                            re.sub(r"(%%)*" + f"{var}", r"\g<1>" + var_val, val)
-                        )
-            if new_values == values or not new_values:
-                break
-            values = new_values.copy()
-            new_values = []
-
-        # replace %% with %
-        # any %% left in the string will be replaced with %
-        values = [value.replace("%%", "%") for value in values]
-
-        return values
-
-    def get_template_value_filter(self, filter_, values):
-        if re.search(r"\(.*\)", filter_):
-            # filter has arguments
-            filter_, args = filter_.split("(", 1)
-            args = args.rstrip(")")
-            args = self.expand_variables(args)
-            if len(args) != 1:
-                raise SyntaxError(f"Filter arguments must be a single value: {args}")
-            args = args[0]
-        else:
-            args = None
-        if filter_ == "lower":
-            if values and type(values) == list:
-                value = [v.lower() for v in values]
-            else:
-                value = [values.lower()] if values else []
-        elif filter_ == "upper":
-            if values and type(values) == list:
-                value = [v.upper() for v in values]
-            else:
-                value = [values.upper()] if values else []
-        elif filter_ == "strip":
-            if values and type(values) == list:
-                value = [v.strip() for v in values]
-            else:
-                value = [values.strip()] if values else []
-        elif filter_ == "capitalize":
-            if values and type(values) == list:
-                value = [v.capitalize() for v in values]
-            else:
-                value = [values.capitalize()] if values else []
-        elif filter_ == "titlecase":
-            if values and type(values) == list:
-                value = [v.title() for v in values]
-            else:
-                value = [values.title()] if values else []
-        elif filter_ == "braces":
-            if values and type(values) == list:
-                value = ["{" + v + "}" for v in values]
-            else:
-                value = ["{" + values + "}"] if values else []
-        elif filter_ == "parens":
-            if values and type(values) == list:
-                value = ["(" + v + ")" for v in values]
-            else:
-                value = ["(" + values + ")"] if values else []
-        elif filter_ == "brackets":
-            if values and type(values) == list:
-                value = ["[" + v + "]" for v in values]
-            else:
-                value = ["[" + values + "]"] if values else []
-        elif filter_ == "shell_quote":
-            if values and type(values) == list:
-                value = [shlex.quote(v) for v in values]
-            else:
-                value = [shlex.quote(values)] if values else []
-        elif filter_ == "split":
-            # split on delimiter
-            delim = args
-            if delim:
-                new_values = []
-                for v in values:
-                    new_values.extend(v.split(delim))
-                value = new_values
-            else:
-                value = values
-        elif filter_ == "chop":
-            # chop off characters from the end
-            chop = args
-            try:
-                chop = int(chop)
-            except ValueError:
-                raise SyntaxError(f"Invalid value for chop: {chop}")
-            value = [v[:-chop] for v in values] if chop else values
-        elif filter_ == "chomp":
-            # chop off characters from the beginning
-            chomp = args
-            try:
-                chomp = int(chomp)
-            except ValueError:
-                raise SyntaxError(f"Invalid value for chomp: {chomp}")
-            value = [v[chomp:] for v in values] if chomp else values
-        elif filter_ == "autosplit":
-            # try to split keyword strings automatically
-            temp_values = [v.replace(",", " ") for v in values]
-            temp_values = [v.replace(";", " ") for v in temp_values]
-            value = []
-            for val in temp_values:
-                value.extend(val.split())
-        # elif filter_.startswith("function:"):
-        # value = self.get_template_value_filter_function(filter_, values)
-        else:
-            raise SyntaxError(f"Unhandled filter: {filter_}")
-        return value
+        parser = MTLParser(
+            get_field_values=self.get_field_value,
+            sanitize=sanitize,
+            sanitize_value=sanitize_value,
+            expand_inplace=options.expand_inplace,
+            inplace_sep=options.inplace_sep,
+            none_str=options.none_str,
+        )
+        rendered = parser.render(template)
+        if options.strip:
+            rendered = [r.strip() for r in rendered]
+        return rendered
 
 
 def get_template_help() -> List[Union[str, List]]:
     """Return help for template system as list of markdown strings or lists of lists"""
     # TODO: would be better to use importlib.abc.ResourceReader but I can't find a single example of how to do this
-    help_file = pathlib.Path(__file__).parent / "template.md"
+    help_file = pathlib.Path(__file__).parent / "filetemplate.md"
     with open(help_file, "r") as fd:
         md = [fd.read()]
+
+    # add help for built-in punctuation fields
+    punctuation_help = """
+    Within the template system, many punctuation characters have special meaning, e.g. `{}` indicates a template field 
+    and this means that some punctuation characters cannot be inserted into the template. 
+    Thus, if you want to insert punctuation into the rendered template value, you can use these punctuation fields to do so. 
+    For example, `{openbrace}value{closebrace}` will render to `{value}`.
+    """
+    punctuation_fields = [
+        ["Field", "Description"],
+        *[[k, v[0]] for k, v in PUNCTUATION_FIELDS.items()],
+    ]
+    md.append("**Punctuation Fields**")
+    md.append(punctuation_fields)
+    md.append("\n" + dedent(punctuation_help).strip())
+
+    # add help for built-in format fields
+    format_help = """
+    The `{strip}` and `{format}` fields are used to format strings. 
+    `{strip,TEMPLATE}` strips whitespace from TEMPLATE. 
+    For example, `{strip,{exiftool:Title}}` will strip any excess whitespace from the title of an image file. 
+
+    `{format:TYPE:FORMAT,TEMPLATE}` formats TEMPLATE using python string formatting codes. 
+    For example: 
+    
+    - `{format:int:02d,{audio:track}}` will format the track number of an audio file to two digits with leading zeros. 
+    - `{format:str:-^30,{audio.title}}` will center the title of an audio file and pad it to 30 characters with '-'.
+
+    TYPE must be one of 'int', 'float', or 'str'. 
+    See https://docs.python.org/3.7/library/string.html#formatspec for more information on valid FORMAT values.
+    """
+    md.append("**String Formatting Fields**")
+    format_fields = [
+        ["Field", "Description"],
+        *[[k, v[0]] for k, v in FORMAT_FIELDS.items()],
+    ]
+    md.append(format_fields)
+    md.append("\n" + dedent(format_help).strip())
 
     # process help from plugins
     help_texts = PM.hook.get_template_help()
@@ -633,89 +213,3 @@ def get_template_help() -> List[Union[str, List]]:
             else:
                 raise ValueError(f"Unhandled help item: {item}")
     return md
-
-
-# def lol_to_md_table(lol: List[List]) -> str:
-#     """Convert a dict to a markdown table; assumes each list is the same length"""
-#     if not lol:
-#         return ""
-#
-#     markdowntable = ""
-#     # Make a string of all the keys in the first dict with pipes before after and between each key
-#     markdownheader = "| " + " | ".join(map(str, lol[0])) + " |"
-#     # Make a header separator line with dashes instead of key names
-#     markdownheaderseparator = "|-----" * len(lol[0]) + "|"
-#     # Add the header row and separator to the table
-#     markdowntable += markdownheader + "\n"
-#     markdowntable += markdownheaderseparator + "\n"
-#     # Loop through the list of lists outputting the rows
-#     for row in lol[1:]:
-#         markdownrow = "".join("| " + str(col) + " " for col in row)
-#         markdowntable += markdownrow + "|" + "\n"
-#     print(f"{markdowntable=}")
-#     return markdowntable
-#
-# def get_template_value_function(
-#     self,
-#     subfield,
-# ):
-#     """Get template value from external function"""
-
-#     if "::" not in subfield:
-#         raise ValueError(
-#             f"SyntaxError: could not parse function name from '{subfield}'"
-#         )
-
-#     filename, funcname = subfield.split("::")
-
-#     filename_validated = expand_and_validate_filepath(filename)
-#     if not filename_validated:
-#         raise ValueError(f"'{filename}' does not appear to be a file")
-
-#     template_func = load_function(filename_validated, funcname)
-#     values = template_func(self.photo, options=self.options)
-
-#     if not isinstance(values, (str, list)):
-#         raise TypeError(
-#             f"Invalid return type for function {funcname}: expected str or list"
-#         )
-#     if type(values) == str:
-#         values = [values]
-
-#     # sanitize directory names if needed
-#     if self.filename:
-#         values = [sanitize_pathpart(value) for value in values]
-#     elif self.dirname:
-#         # sanitize but don't replace any "/" as user function may want to create sub directories
-#         values = [sanitize_dirname(value, replacement=None) for value in values]
-
-#     return values
-
-# def get_template_value_filter_function(self, filter_, values):
-#     """Filter template value from external function"""
-
-#     filter_ = filter_.replace("function:", "")
-
-#     if "::" not in filter_:
-#         raise ValueError(
-#             f"SyntaxError: could not parse function name from '{filter_}'"
-#         )
-
-#     filename, funcname = filter_.split("::")
-
-#     filename_validated = expand_and_validate_filepath(filename)
-#     if not filename_validated:
-#         raise ValueError(f"'{filename}' does not appear to be a file")
-
-#     template_func = load_function(filename_validated, funcname)
-
-#     if not isinstance(values, (list, tuple)):
-#         values = [values]
-#     values = template_func(values)
-
-#     if not isinstance(values, list):
-#         raise TypeError(
-#             f"Invalid return type for function {funcname}: expected list"
-#         )
-
-#     return values

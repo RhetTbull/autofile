@@ -10,9 +10,10 @@ import pytest
 from freezegun import freeze_time
 
 import autofile
+from autofile.filetemplate import FileTemplate
+from autofile.mtlparser import SyntaxError
 from autofile.pathlibutil import PathlibUtil
 from autofile.renderoptions import RenderOptions
-from autofile.filetemplate import FileTemplate, SyntaxError
 
 PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"
@@ -224,7 +225,7 @@ def test_template_render_punctuation():
     """Test that punctuation is rendered correctly"""
     options = RenderOptions()
     for key, value in PUNCTUATION.items():
-        assert FileTemplate(PHOTO_FILE).render("{" + key + "}", options=options)[0] == [
+        assert FileTemplate(PHOTO_FILE).render("{" + key + "}", options=options) == [
             value
         ]
 
@@ -237,7 +238,7 @@ def test_template_render_filestat():
     """Test for filestat plugin"""
     options = RenderOptions()
     template = FileTemplate(PHOTO_FILE)
-    assert template.render("{size}-{uid}-{gid}-{user}-{group}", options=options)[0] == [
+    assert template.render("{size}-{uid}-{gid}-{user}-{group}", options=options) == [
         "2771656-501-20-rhet-staff"
     ]
 
@@ -247,7 +248,7 @@ def test_template_render(data, setlocale):
     """Test template rendering"""
 
     template = FileTemplate(data[0])
-    result, _ = template.render(data[1], options=RenderOptions())
+    result = template.render(data[1], options=RenderOptions())
     assert result == data[2]
 
 
@@ -260,7 +261,7 @@ def test_template_finder():
         md.findercomment = "FizzBuzz"
 
         template = FileTemplate(test_file)
-        rendered, _ = template.render(
+        rendered = template.render(
             "{finder:tags}-{finder:comment}", options=RenderOptions()
         )
         assert rendered == ["Foo-FizzBuzz"]
@@ -271,9 +272,9 @@ def test_template_filedates_today(setlocale):
     """Test {today}"""
     autofile.plugins.templates.filedates.TODAY = None
     template = FileTemplate(PHOTO_FILE)
-    rendered, _ = template.render("{today}", options=RenderOptions())
+    rendered = template.render("{today}", options=RenderOptions())
     assert rendered == ["2021-10-29T05:39:00.028590-07:00"]
-    rendered, _ = template.render("{today}", options=RenderOptions())
+    rendered = template.render("{today}", options=RenderOptions())
     assert rendered == ["2021-10-29T05:39:00.028590-07:00"]
 
 
@@ -282,9 +283,9 @@ def test_template_filedates_now(setlocale):
     """Test {now}"""
     autofile.plugins.templates.filedates.TODAY = None
     template = FileTemplate(PHOTO_FILE)
-    rendered, _ = template.render("{now}", options=RenderOptions())
+    rendered = template.render("{now}", options=RenderOptions())
     assert rendered == ["2021-10-29T05:39:00.012345-07:00"]
-    rendered, _ = template.render("{now}", options=RenderOptions())
+    rendered = template.render("{now}", options=RenderOptions())
     assert rendered == ["2021-10-29T05:39:00.012345-07:00"]
 
 
