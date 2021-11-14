@@ -245,10 +245,9 @@ class MTLParser:
                 negation = ts.template.conditional.negation
                 if ts.template.conditional.value is not None:
                     # conditional value is also a TemplateString
-                    conditional_value = self._render_statement(
-                        ts.template.conditional.value,
-                        # path_sep=path_sep,
-                    )
+                    conditional_value = []
+                    for cv in ts.template.conditional.value:
+                        conditional_value += self._render_statement(cv)
                 else:
                     # this shouldn't happen
                     conditional_value = [""]
@@ -340,13 +339,6 @@ class MTLParser:
                         raise SyntaxError(
                             f"comparison operators may only be used with values that can be converted to numbers: {vals} {conditional_value}"
                         )
-
-                if operator in ["contains", "matches", "startswith", "endswith"]:
-                    # process any "or" values separated by "|"
-                    temp_values = []
-                    for c in conditional_value:
-                        temp_values.extend(c.split("|"))
-                    conditional_value = temp_values
 
                 if operator == "contains":
                     vals = string_test(lambda v, c: c in v)

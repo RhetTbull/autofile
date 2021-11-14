@@ -33,7 +33,7 @@ Template:
 ;
 
 NON_TEMPLATE_STRING:
-    /[^\{\},\?]*/
+    /[^\{\},\?\|]*/
 ;
 
 Delim:
@@ -84,7 +84,7 @@ Conditional:
     (negation=NEGATION)?
     (operator=OPERATOR)
     (" "+)-
-    (value=Statement)
+    (value+=Statement['|'])
     )?
 ;
 

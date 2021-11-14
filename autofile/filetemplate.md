@@ -41,7 +41,7 @@ Valid filters are:
 - braces: Enclose value in curly braces, e.g. 'value => '{value}'.
 - parens: Enclose value in parentheses, e.g. 'value' => '(value').
 - brackets: Enclose value in brackets, e.g. 'value' => '[value]'.
-- split(delim): Split value into a list of values using delim as delimiter, e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;).
+- split(x): Split value into a list of values using x as delimiter, e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;).
 - autosplit: Automatically split delimited string into separate values (for example, keyword string in docx files); will split strings delimited by comma, semicolon, or space, e.g. 'value1,value2' => ['value1', 'value2'].
 - chop(x): Remove x characters off the end of value, e.g. chop(1): 'Value' => 'Valu'; when applied to a list, chops characters from each list value, e.g. chop(1): ["travel", "beach"]=> ["trave", "beac"].
 - chomp(x): Remove x characters from the beginning of value, e.g. chomp(1): ['Value'] => ['alue']; when applied to a list, removes characters from each list value, e.g. chomp(1): ["travel", "beach"]=> ["ravel", "each"].
@@ -88,7 +88,7 @@ e.g. if an image file description is "my description":
 - `==`: template field equals value
 - `!=`: template field does not equal value
 
-Multiple values may be separated by '|' (the pipe symbol).  `value` is itself a template statement so you can use one or more template fields in `value` which will be resolved before the comparison occurs. When applied to multi-valued fields (ie. lists), the comparison is applied to each value in the list and evaluates to True if *any* of the values match.
+Multiple values may be separated by '|' (the pipe symbol) when used with `contains`, `matches`, `startswith`, and `endswith`.  `value` is itself a template statement so you can use one or more template fields in `value` which will be resolved before the comparison occurs. When applied to multi-valued fields (ie. lists), the comparison is applied to each value in the list and evaluates to True if *any* of the values match.
 
 For example:
 
@@ -134,7 +134,7 @@ Some templates have additional modifiers that can be appended to the template na
 
 **Variables**
 
-You can define variables for later use in the template string using the format `{var:NAME,VALUE}`.  Variables may then be referenced using the format `%NAME`. For example: `{var:foo,bar}` defines the variable `%foo` to have value `bar`. This can be useful if you want to re-use a complex template value in multiple places within your template string or for allowing the use of characters that would otherwise be prohibited in a template string. For example, the "pipe" (`|`) character is not allowed in a find/replace pair but you can get around this limitation like so: `{var:pipe,|}{audio:title[-,%pipe]}` which replaces the `-` character with `|` (the value of `%pipe`).  
+You can define variables for later use in the template string using the format `{var:NAME,VALUE}`.  Variables may then be referenced using the format `%NAME`. For example: `{var:foo,bar}` defines the variable `%foo` to have value `bar`. This can be useful if you want to re-use a complex template value in multiple places within your template string or for allowing the use of characters that would otherwise be prohibited in a template string. For example, the "pipe" (`|`) character is not allowed in a find/replace pair but you can get around this limitation like so: `{var:pipe,{pipe}}{audio:title[-,%pipe]}` which replaces the `-` character with `|` (the value of `%pipe`).  
 
 Variables can also be referenced as fields in the template string, for example: `{var:year,created.year}{filepath.stem}-{%year}{filepath.suffix}`. In some cases, use of variables can make your template string more readable.  Variables can be used as template fields, as values for filters, as values for conditional operations, or as default values.  When used as a conditional value or default value, variables should be treated like any other field and enclosed in braces as conditional and default values are evaluated as template strings. For example: `{var:name,John}{docx:author contains {%name}?{%name},Not-{%name}}
 

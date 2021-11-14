@@ -145,7 +145,7 @@ TEST_DATA = [
     ],
     [DOC_FILE_1, "{var:bar,FOO}{var:foo,BAR}{%foo[%foo,%bar]}", ["FOO"]],
     [DOC_FILE_1, "{var:space, }{docx:author|split(%space)}", ["Rhet", "Turnbull"]],
-    [DOC_FILE_1, "{var:pipe,|}{docx:author[ ,%pipe]}", ["Rhet|Turnbull"]],
+    [DOC_FILE_1, "{var:pipe,{pipe}}{docx:author[ ,%pipe]}", ["Rhet|Turnbull"]],
     [
         DOC_FILE_1,
         "{var:name,Rhet}{docx:author contains {%name}?{%name},Not-{%name}}",
