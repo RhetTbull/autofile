@@ -40,8 +40,8 @@ FIELD_VALUES = {
 TEST_DATA = [
     # basic templates
     ["{foo}", ["Foo", "Bar"]],
-    ["{+foo}", ["BarFoo"]],
-    ["{, +foo}", ["Bar, Foo"]],
+    ["{+foo}", ["FooBar"]],
+    ["{, +foo}", ["Foo, Bar"]],
     ["{foo:foo}", ["Foo"]],
     ["{foo:bar}", ["Bar"]],
     ["{bar}", ["Foo Bar"]],
@@ -52,8 +52,8 @@ TEST_DATA = [
     ["{fizz[z,s]}", [" fiss buss "]],
     ["{fizz[z,s|i,u]}", [" fuss buss "]],
     # filters
-    ["{+foo|lower}", ["barfoo"]],
-    ["{+foo|upper}", ["BARFOO"]],
+    ["{+foo|lower}", ["foobar"]],
+    ["{+foo|upper}", ["FOOBAR"]],
     ["{fizz|strip}", ["fizz buzz"]],
     ["{fizz|strip|capitalize}", ["Fizz buzz"]],
     ["{fizz|titlecase}", [" Fizz Buzz "]],
@@ -84,10 +84,10 @@ TEST_DATA = [
     ["{format:str:-^10,{answer}}", ["----42----"]],
     # variables
     ["{var:myvar,{semicolon}}{foo:foo}{%myvar}", ["Foo;"]],
-    ["{var:myvar,{semicolon}}{;+foo[%myvar,%%]}", ["Bar%Foo"]],
-    ["{var:myvar,{semicolon}}{;+foo|split(%myvar)}", ["Bar", "Foo"]],
-    ["{var:myvar,X}{X+foo|split(%myvar)}", ["Bar", "Foo"]],
-    ["{var:myvar,{percent}}{%myvar+foo}", ["Bar%Foo"]],
+    ["{var:myvar,{semicolon}}{;+foo[%myvar,%%]}", ["Foo%Bar"]],
+    ["{var:myvar,{semicolon}}{;+foo|split(%myvar)}", ["Foo", "Bar"]],
+    ["{var:myvar,X}{X+foo|split(%myvar)}", ["Foo", "Bar"]],
+    ["{var:myvar,{percent}}{%myvar+foo}", ["Foo%Bar"]],
     # conditionals
     ["{foo contains Foo?YES,NO}", ["YES"]],
     ["{foo contains Fo?YES,NO}", ["YES"]],
@@ -179,11 +179,11 @@ def test_expand_inplace():
     """Test expand_inplace"""
     template = CustomParser(expand_inplace=True)
     result = template.render("{foo}")
-    assert result[0] == "Bar,Foo"  # expand_inplace sorts the values
+    assert result[0] == "Foo,Bar"
 
     template = CustomParser(expand_inplace=True, inplace_sep="/")
     result = template.render("{foo}")
-    assert result[0] == "Bar/Foo"
+    assert result[0] == "Foo/Bar"
 
 
 def test_template_var_error():

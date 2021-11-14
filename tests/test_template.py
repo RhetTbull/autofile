@@ -58,7 +58,8 @@ TEST_DATA = [
     # exiftool
     [PHOTO_FILE, "{exiftool:created.year}", ["2021"]],
     [PHOTO_FILE, "{exiftool:Make}", ["Apple"]],
-    [PHOTO_FILE, "{,+exiftool:Keywords}", ["fruit,pears"]],
+    [PHOTO_FILE, "{exiftool:Keywords contains fruit?YES,NO}", ["YES"]],
+    [PHOTO_FILE, "{exiftool:Keywords contains pears?YES,NO}", ["YES"]],
     [PHOTO_FILE, "{exiftool:EXIF:Make}", ["Apple"]],
     [PHOTO_FILE, "{exiftool:IPTC:Keywords contains pears?pears,not_pears}", ["pears"]],
     # mdls

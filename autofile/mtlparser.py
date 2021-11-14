@@ -284,7 +284,7 @@ class MTLParser:
 
             if self.expand_inplace or delim is not None:
                 sep = delim if delim is not None else self.inplace_sep
-                vals = [sep.join(sorted(vals))] if vals else []
+                vals = [sep.join(vals)] if vals else []
 
             for filter_ in filters:
                 vals = self.get_filter_values(filter_, vals)
