@@ -45,6 +45,14 @@ Valid filters are:
 - autosplit: Automatically split delimited string into separate values (for example, keyword string in docx files); will split strings delimited by comma, semicolon, or space, e.g. 'value1,value2' => ['value1', 'value2'].
 - chop(x): Remove x characters off the end of value, e.g. chop(1): 'Value' => 'Valu'; when applied to a list, chops characters from each list value, e.g. chop(1): ["travel", "beach"]=> ["trave", "beac"].
 - chomp(x): Remove x characters from the beginning of value, e.g. chomp(1): ['Value'] => ['alue']; when applied to a list, removes characters from each list value, e.g. chomp(1): ["travel", "beach"]=> ["ravel", "each"].
+- sort: Sort list of values, e.g. ['c', 'b', 'a'] => ['a', 'b', 'c'].
+- rsort: Sort list of values in reverse order, e.g. ['a', 'b', 'c'] => ['c', 'b', 'a'].
+- reverse: Reverse order of values, e.g. ['a', 'b', 'c'] => ['c', 'b', 'a'].
+- uniq: Remove duplicate values, e.g. ['a', 'b', 'c', 'b', 'a'] => ['a', 'b', 'c'].
+- join(x): Join list of values with delimiter x, e.g. join(:): ['a', 'b', 'c'] => 'a:b:c'; the DELIM option functions similar to join(x) but with DELIM, the join happens before being passed to any filters.
+- append(x): Append x to list of values, e.g. append(d): ['a', 'b', 'c'] => ['a', 'b', 'c', 'd'].
+- prepend(x): Prepend x to list of values, e.g. prepend(d): ['a', 'b', 'c'] => ['d', 'a', 'b', 'c'].
+- remove(x): Remove x from list of values, e.g. remove(b): ['a', 'b', 'c'] => ['a', 'c'].
 
 <!-- - shell_quote: Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.
 - function: Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxfiles/blob/master/examples/template_filter.py

@@ -209,6 +209,10 @@ class MTLParser:
             if ts.template.delim is not None:
                 # if value is None, means format was {+field}
                 delim = ts.template.delim.value or ""
+                delim = self.expand_variables(delim)
+                if len(delim) != 1:
+                    raise SyntaxError(f"delim must have a single value: {delim}")
+                delim = delim[0]
             else:
                 delim = None
 
@@ -581,6 +585,33 @@ class MTLParser:
             value = []
             for val in temp_values:
                 value.extend(val.split())
+        elif filter_ == "sort":
+            # sort list of values
+            value = sorted(values)
+        elif filter_ == "rsort":
+            # reverse sort list of values
+            value = sorted(values, reverse=True)
+        elif filter_ == "reverse":
+            # reverse list of values
+            value = values[::-1]
+        elif filter_ == "uniq":
+            # remove duplicate values from list
+            temp_values =[]
+            [temp_values.append(v) for v in values if v not in temp_values]
+            value = temp_values
+        elif filter_ == "join":
+            # join list of values with delimiter
+            delim = args
+            value = [delim.join(values)]
+        elif filter_ == "append":
+            # append value to list
+            value = values + [args]
+        elif filter_ == "prepend":
+            # prepend value to list
+            value = [args] + values
+        elif filter_ == "remove":
+            # remove value from list
+            value = [v for v in values if v != args]
         # elif filter_.startswith("function:"):
         # value = self.get_template_value_filter_function(filter_, values)
         else:
