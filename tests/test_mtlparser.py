@@ -88,6 +88,7 @@ TEST_DATA = [
     ["{var:myvar,{semicolon}}{;+foo|split(%myvar)}", ["Foo", "Bar"]],
     ["{var:myvar,X}{X+foo|split(%myvar)}", ["Foo", "Bar"]],
     ["{var:myvar,{percent}}{%myvar+foo}", ["Foo%Bar"]],
+    ["{var:pipe,{pipe}}{foobar[,,%pipe]}", ["foo|bar"]],
     # conditionals
     ["{foo contains Foo?YES,NO}", ["YES"]],
     ["{foo contains Fo?YES,NO}", ["YES"]],
