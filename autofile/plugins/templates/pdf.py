@@ -210,7 +210,12 @@ def pdf_date_to_datetime(date_str: str) -> datetime.datetime:
 
     match = re.match(pdf_date_pattern, date_str)
     if match:
+        # date_info is the dict from the match, dt_info is dict to pass to datetime.datetime as **kwargs
         date_info = match.groupdict()
+        dt_info = {
+            k: int(date_info[k])
+            for k in ["year", "month", "day", "hour", "minute", "second"]
+        }
 
         for k, v in date_info.items():  # transform values
             if v is None:
@@ -221,17 +226,18 @@ def pdf_date_to_datetime(date_str: str) -> datetime.datetime:
                 date_info[k] = int(v)
 
         if date_info["tz_offset"] in ("z", None):  # UTC
-            date_info["tzinfo"] = datetime.timezone.utc
+            dt_info["tzinfo"] = datetime.timezone.utc
         else:
             multiplier = 1 if date_info["tz_offset"] == "+" else -1
-            date_info["tzinfo"] = datetime.timezone(
+            dt_info["tzinfo"] = datetime.timezone(
                 datetime.timedelta(
-                    seconds=multiplier
-                    * (3600 * date_info["tz_hour"] + 60 * date_info["tz_minute"]),
+                    seconds=float(
+                        multiplier
+                        * (3600 * date_info["tz_hour"] + 60 * date_info["tz_minute"]),
+                    )
                 )
             )
 
-        for k in ("tz_offset", "tz_hour", "tz_minute"):  # no longer needed
-            del date_info[k]
+        return datetime.datetime(**dt_info)
 
-        return datetime.datetime(**date_info)
+    raise ValueError(f"Invalid date string: {date_str}")

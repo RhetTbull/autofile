@@ -140,7 +140,7 @@ def datetime_naive_to_local(dt: datetime.datetime) -> datetime.datetime:
         # has timezone info
         raise ValueError(
             "dt must be naive/timezone unaware: "
-            f"{dt} has tzinfo {dt.tzinfo} and offset {dt.tizinfo.utcoffset(dt)}"
+            f"{dt} has tzinfo {dt.tzinfo} and offset {dt.tzinfo.utcoffset(dt)}"
         )
 
     return dt.replace(tzinfo=get_local_tz(dt))

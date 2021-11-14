@@ -12,7 +12,7 @@ FIELDS = {
     "{mdls}": "Get metadata attributes for file as returned by mdls command; use in form '{mdls:ATTRIBUTE}', for example, '{mdls:kMDItemContentType}'",
 }
 
-CACHED_MDLS_DATA = {}
+CACHED_MDLS_DATA: Dict[str, Dict] = {}
 
 
 @autofile.hookimpl

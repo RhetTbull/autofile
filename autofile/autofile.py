@@ -2,12 +2,12 @@
 import fnmatch
 import pathlib
 import re
-from typing import Callable, List, Optional
+from typing import Callable, List, Optional, Union
 
 from .constants import NONE_STR_SENTINEL
+from .filetemplate import FileTemplate, UnknownFieldError
 from .pathlibutil import PathlibUtil
 from .renderoptions import RenderOptions
-from .filetemplate import FileTemplate, UnknownFieldError
 from .utils import noop
 
 
@@ -18,7 +18,7 @@ class MultipleFilesError(Exception):
 
 
 def filter_file(
-    filepath: pathlib.Path,
+    filepath: Union[pathlib.Path, PathlibUtil],
     glob: Optional[List[str]] = None,
     regex: Optional[List[str]] = None,
     filter_template: Optional[List[str]] = None,

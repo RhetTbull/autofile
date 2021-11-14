@@ -4,7 +4,7 @@ import importlib
 import locale
 import pathlib
 from textwrap import dedent
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import pluggy
 from textx import TextXSyntaxError, metamodel_from_file
@@ -12,7 +12,7 @@ from textx import TextXSyntaxError, metamodel_from_file
 from . import hookspecs
 from ._version import __version__
 from .constants import APP_NAME
-from .mtlparser import PUNCTUATION_FIELDS, FORMAT_FIELDS, MTLParser
+from .mtlparser import FORMAT_FIELDS, PUNCTUATION_FIELDS, MTLParser
 from .path_utils import sanitize_dirname, sanitize_filename, sanitize_pathpart
 from .pathlibutil import PathlibUtil
 from .renderoptions import RenderOptions
@@ -155,7 +155,7 @@ class FileTemplate:
         return rendered
 
 
-def get_template_help() -> List[Union[str, List]]:
+def get_template_help() -> List[Any]:
     """Return help for template system as list of markdown strings or lists of lists"""
     # TODO: would be better to use importlib.abc.ResourceReader but I can't find a single example of how to do this
     help_file = pathlib.Path(__file__).parent / "filetemplate.md"

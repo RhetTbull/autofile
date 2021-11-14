@@ -49,3 +49,5 @@ def get_template_value(
     elif subfield == "comment":
         comment = metadata.findercomment
         return [str(comment)]
+
+    raise ValueError(f"Invalid subfield '{subfield}'")

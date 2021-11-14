@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from autofile.mtlparser import SyntaxError, MTLParser
+from autofile.mtlparser import MTLParser, SyntaxError
 
 PUNCTUATION = {
     "comma": ",",
@@ -119,6 +119,8 @@ TEST_DATA = [
     ["{answer < 43?YES,NO}", ["YES"]],
 ]
 
+FILTER_ARGS_REQUIRED = ["split", "chop", "chomp", "join", "append", "prepend", "remove"]
+
 
 class CustomParser:
     def __init__(
@@ -220,3 +222,14 @@ def test_sanitize_value_2():
     template = CustomParser(sanitize_value=sanitize_value)
     result = template.render("Foo {foo:bar}")
     assert result == ["Foo bar"]
+
+
+def test_filter_args_required():
+    """Test that filters called without args raises exception"""
+    template = CustomParser()
+    for filter_name in FILTER_ARGS_REQUIRED:
+        with pytest.raises(SyntaxError):
+            template.render(f"{{foo|{filter_name}}}")
+    for filter_name in FILTER_ARGS_REQUIRED:
+        with pytest.raises(SyntaxError):
+            template.render(f"{{foo|{filter_name}()}}")

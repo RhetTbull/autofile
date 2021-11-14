@@ -27,7 +27,7 @@ class RenderOptions:
     tag: Optional[str] = None
     none_str: str = NONE_STR_DEFAULT
     expand_inplace: bool = False
-    inplace_sep: Optional[str] = INPLACE_DEFAULT
+    inplace_sep: str = INPLACE_DEFAULT
     filename: bool = False
     dirname: bool = False
     strip: bool = False

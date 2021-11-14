@@ -16,6 +16,8 @@ from tinytag import TinyTag, TinyTagException
 
 import autofile
 
+# Note: autofile.cli.print_warning used below, cannot import it here as you'll get a "partially initialized module" error
+
 FIELDS = {
     "{audio}": "Use in form '{audio:TAG}'; Returns tag value for various audio types include mp3, "
 }
@@ -81,7 +83,6 @@ def get_template_value(
 
     try:
         tag = TinyTag.get(filepath)
-        vals = []
         if field == "audio":
             if subfield is None:
                 raise ValueError("subfield must be specified for audio field")

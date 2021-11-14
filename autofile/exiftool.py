@@ -94,11 +94,10 @@ class _ExifToolProc:
     @property
     def process(self):
         """return the exiftool subprocess"""
-        if self._process_running:
-            return self._process
-        else:
+        if not self._process_running:
             self._start_proc()
-            return self._process
+
+        return self._process
 
     @property
     def pid(self):

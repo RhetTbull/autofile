@@ -8,7 +8,7 @@ import pathlib
 import re
 import shlex
 from textwrap import dedent
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from textx import TextXSyntaxError, metamodel_from_file
 
@@ -58,7 +58,7 @@ FORMAT_FIELDS = {
 }
 
 
-def format_str_value(value, format_str):
+def format_str_value(value: Any, format_str: str) -> str:
     """Format value based on format code in field in format id:02d"""
     if not format_str:
         return str(value)
@@ -142,7 +142,7 @@ class MTLParser:
     def render(
         self,
         template: str,
-    ):
+    ) -> List[str]:
         """Render an MTL template string
 
         Args:
@@ -209,10 +209,7 @@ class MTLParser:
             if ts.template.delim is not None:
                 # if value is None, means format was {+field}
                 delim = ts.template.delim.value or ""
-                delim = self.expand_variables(delim)
-                if len(delim) != 1:
-                    raise SyntaxError(f"delim must have a single value: {delim}")
-                delim = delim[0]
+                delim = self.expand_variables_to_str(delim, "delim")
             else:
                 delim = None
 
@@ -298,20 +295,9 @@ class MTLParser:
                 for val in vals:
                     for pair in ts.template.findreplace.pairs:
                         find = pair.find or ""
-                        find_vars = self.expand_variables(find)
-                        if len(find_vars) != 1:
-                            raise SyntaxError(
-                                f"find/replace must have a single value to find or replace: {find_vars}"
-                            )
-                        find = find_vars[0]
-
+                        find = self.expand_variables_to_str(find, "find/replace")
                         repl = pair.replace or ""
-                        repl_vars = self.expand_variables(repl)
-                        if len(repl_vars) != 1:
-                            raise SyntaxError(
-                                f"find/replace must have a single value to replace: {repl_vars}"
-                            )
-                        repl = repl_vars[0]
+                        repl = self.expand_variables_to_str(repl, "find/replace")
                         val = val.replace(find, repl)
                     new_vals.append(val)
                 vals = new_vals
@@ -416,6 +402,20 @@ class MTLParser:
 
         return results
 
+    def expand_variables_to_str(self, value: str, name: str) -> str:
+        """
+        Expand variables in value and return a str of the expanded value.
+        Enforce that the expanded value is a single value, raises ValueError if not.
+
+        Args:
+            value: the value to expand
+            name: the name of the value being expanded (used in error messages)
+        """
+        expanded = self.expand_variables(value)
+        if len(expanded) != 1:
+            raise SyntaxError(f"{name} must have a single value, not {expanded}")
+        return expanded[0]
+
     def expand_variables(self, value: str) -> List[str]:
         """Expand variables in value"""
         # replace any variables with their values
@@ -475,83 +475,66 @@ class MTLParser:
 
         if field == "format":
             if not subfield or ":" not in subfield:
-                raise ValueError("{format} requires subfield in form TYPE:FORMAT")
+                raise SyntaxError("{format} requires subfield in form TYPE:FORMAT")
             type_, format_str = subfield.split(":", 1)
             if type_ not in ("int", "float", "str"):
-                raise ValueError(
+                raise SyntaxError(
                     f"'{type_}' is not a valid type for {format}: must be one of 'int', 'float', 'str'"
                 )
             if type_ == "int":
-                default = [int(v) for v in default]
+                default_ = [int(v) for v in default]
             elif type_ == "float":
-                default = [float(v) for v in default]
-            format_str = self.expand_variables(format_str)
-            if len(format_str) != 1:
-                raise ValueError(
-                    f"{format} format string must be a single value, not {format_str}"
-                )
-            format_str = format_str[0]
-            return [format_str_value(v, format_str) for v in default]
+                default_ = [float(v) for v in default]
+            else:
+                default_ = default
+            format_str = self.expand_variables_to_str(format_str, "format string")
+            return [format_str_value(v, format_str) for v in default_]
 
         return None
 
-    def get_filter_values(self, filter_, values):
+    def get_filter_values(self, filter_: str, values: List[str]) -> List[str]:
         """Return filtered values"""
         if re.search(r"\(.*\)", filter_):
             # filter has arguments
             filter_, args = filter_.split("(", 1)
             args = args.rstrip(")")
-            args = self.expand_variables(args)
-            if len(args) != 1:
-                raise SyntaxError(f"Filter arguments must be a single value: {args}")
-            args = args[0]
+            args = self.expand_variables_to_str(args, "Filter arguments")
         else:
             args = None
+
+        if (
+            filter_
+            in [
+                "split",
+                "chop",
+                "chomp",
+                "join",
+                "append",
+                "prepend",
+                "remove",
+            ]
+            and (args is None or not len(args))
+        ):
+            raise SyntaxError(f"{filter_} requires arguments")
+
         if filter_ == "lower":
-            if values and type(values) == list:
-                value = [v.lower() for v in values]
-            else:
-                value = [values.lower()] if values else []
+            value = [v.lower() for v in values]
         elif filter_ == "upper":
-            if values and type(values) == list:
-                value = [v.upper() for v in values]
-            else:
-                value = [values.upper()] if values else []
+            value = [v.upper() for v in values]
         elif filter_ == "strip":
-            if values and type(values) == list:
-                value = [v.strip() for v in values]
-            else:
-                value = [values.strip()] if values else []
+            value = [v.strip() for v in values]
         elif filter_ == "capitalize":
-            if values and type(values) == list:
-                value = [v.capitalize() for v in values]
-            else:
-                value = [values.capitalize()] if values else []
+            value = [v.capitalize() for v in values]
         elif filter_ == "titlecase":
-            if values and type(values) == list:
-                value = [v.title() for v in values]
-            else:
-                value = [values.title()] if values else []
+            value = [v.title() for v in values]
         elif filter_ == "braces":
-            if values and type(values) == list:
-                value = ["{" + v + "}" for v in values]
-            else:
-                value = ["{" + values + "}"] if values else []
+            value = ["{" + v + "}" for v in values]
         elif filter_ == "parens":
-            if values and type(values) == list:
-                value = ["(" + v + ")" for v in values]
-            else:
-                value = ["(" + values + ")"] if values else []
+            value = ["(" + v + ")" for v in values]
         elif filter_ == "brackets":
-            if values and type(values) == list:
-                value = ["[" + v + "]" for v in values]
-            else:
-                value = ["[" + values + "]"] if values else []
+            value = ["[" + v + "]" for v in values]
         elif filter_ == "shell_quote":
-            if values and type(values) == list:
-                value = [shlex.quote(v) for v in values]
-            else:
-                value = [shlex.quote(values)] if values else []
+            value = [shlex.quote(v) for v in values]
         elif filter_ == "split":
             # split on delimiter
             delim = args
@@ -564,19 +547,17 @@ class MTLParser:
                 value = values
         elif filter_ == "chop":
             # chop off characters from the end
-            chop = args
             try:
-                chop = int(chop)
+                chop = int(args)
             except ValueError:
-                raise SyntaxError(f"Invalid value for chop: {chop}")
+                raise SyntaxError(f"Invalid value for chop: {args}")
             value = [v[:-chop] for v in values] if chop else values
         elif filter_ == "chomp":
             # chop off characters from the beginning
-            chomp = args
             try:
-                chomp = int(chomp)
+                chomp = int(args)
             except ValueError:
-                raise SyntaxError(f"Invalid value for chomp: {chomp}")
+                raise SyntaxError(f"Invalid value for chomp: {args}")
             value = [v[chomp:] for v in values] if chomp else values
         elif filter_ == "autosplit":
             # try to split keyword strings automatically
@@ -596,8 +577,10 @@ class MTLParser:
             value = values[::-1]
         elif filter_ == "uniq":
             # remove duplicate values from list
-            temp_values =[]
-            [temp_values.append(v) for v in values if v not in temp_values]
+            temp_values = []
+            for v in values:
+                if v not in temp_values:
+                    temp_values.append(v)
             value = temp_values
         elif filter_ == "join":
             # join list of values with delimiter

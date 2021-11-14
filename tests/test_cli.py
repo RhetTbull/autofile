@@ -226,33 +226,6 @@ def test_cli_filename(source, target):
         assert not p.exists()
 
 
-def test_cli_filename(source, target):
-    """Test CLI with --filename"""
-    from autofile.cli import cli
-
-    source_files = list(source.glob("*"))
-
-    runner = CliRunner()
-    result = runner.invoke(
-        cli,
-        [
-            "--target",
-            str(target),
-            "--filename",
-            "{created.year}-{filepath.name}",
-            *[str(p) for p in source_files],
-        ],
-    )
-    assert result.exit_code == 0
-    assert "Moving" in result.output
-    for p in ["2021-flowers.jpeg", "2021-pears.jpg", "2021-warm_lights.mp3"]:
-        target_file = target / p
-        assert target_file.exists()
-    # Check that source files don't exist (they got moved)
-    for p in source_files:
-        assert not p.exists()
-
-
 def test_cli_filename_directory(source, target):
     """Test CLI with --filename with --directory"""
     from autofile.cli import cli
@@ -311,12 +284,12 @@ def test_cli_filename_directory_filter(source, target):
     assert result.exit_code == 0
     output = str(result.output)
     assert "Moving" in output
-    
+
     # TODO: these pass with pytest -s but otherwise fail
     # assert re.findall("Skipping.*warm_lights.mp3", output)
 
     assert "Processed 2" in output
-    
+
     for p in ["Apple/2021-flowers.jpeg", "Apple/2021-pears.jpg"]:
         target_file = target / p
         assert target_file.exists()
