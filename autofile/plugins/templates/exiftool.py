@@ -104,7 +104,7 @@ def get_template_value(
     elif tag in exifdict:
         values = exifdict[tag]
         values = [values] if not isinstance(values, list) else values
-        values = [str(v) for v in values]
+        values = sorted([str(v) for v in values])
 
         # "(Binary data " below is hack workaround for "(Binary data 0 bytes, use -b option to extract)" error that happens
         # when exporting video with keywords on Photos 5.0 / Catalina
