@@ -241,8 +241,8 @@ Valid filters are:
  • braces: Enclose value in curly braces, e.g. 'value => '{value}'.            
  • parens: Enclose value in parentheses, e.g. 'value' => '(value').            
  • brackets: Enclose value in brackets, e.g. 'value' => '[value]'.             
- • split(delim): Split value into a list of values using delim as delimiter,   
-   e.g. 'value1;value2' => ['value1', 'value2'] if used with split(;).         
+ • split(x): Split value into a list of values using x as delimiter, e.g.      
+   'value1;value2' => ['value1', 'value2'] if used with split(;).              
  • autosplit: Automatically split delimited string into separate values (for   
    example, keyword string in docx files); will split strings delimited by     
    comma, semicolon, or space, e.g. 'value1,value2' => ['value1', 'value2'].   
@@ -252,6 +252,21 @@ Valid filters are:
  • chomp(x): Remove x characters from the beginning of value, e.g. chomp(1):   
    ['Value'] => ['alue']; when applied to a list, removes characters from each 
    list value, e.g. chomp(1): ["travel", "beach"]=> ["ravel", "each"].         
+ • sort: Sort list of values, e.g. ['c', 'b', 'a'] => ['a', 'b', 'c'].         
+ • rsort: Sort list of values in reverse order, e.g. ['a', 'b', 'c'] => ['c',  
+   'b', 'a'].                                                                  
+ • reverse: Reverse order of values, e.g. ['a', 'b', 'c'] => ['c', 'b', 'a'].  
+ • uniq: Remove duplicate values, e.g. ['a', 'b', 'c', 'b', 'a'] => ['a', 'b', 
+   'c'].                                                                       
+ • join(x): Join list of values with delimiter x, e.g. join(:): ['a', 'b', 'c']
+   => 'a:b:c'; the DELIM option functions similar to join(x) but with DELIM,   
+   the join happens before being passed to any filters.                        
+ • append(x): Append x to list of values, e.g. append(d): ['a', 'b', 'c'] =>   
+   ['a', 'b', 'c', 'd'].                                                       
+ • prepend(x): Prepend x to list of values, e.g. prepend(d): ['a', 'b', 'c'] =>
+   ['d', 'a', 'b', 'c'].                                                       
+ • remove(x): Remove x from list of values, e.g. remove(b): ['a', 'b', 'c'] => 
+   ['a', 'c'].                                                                 
 
 e.g. if file keywords are ["FOO","bar"]:                                       
 
@@ -293,11 +308,12 @@ required if you use a conditional expression.  Valid comparison operators are:
  • ==: template field equals value                                             
  • !=: template field does not equal value                                     
 
-Multiple values may be separated by '|' (the pipe symbol).  value is itself a  
-template statement so you can use one or more template fields in value which   
-will be resolved before the comparison occurs. When applied to multi-valued    
-fields (ie. lists), the comparison is applied to each value in the list and    
-evaluates to True if any of the values match.                                  
+Multiple values may be separated by '|' (the pipe symbol) when used with       
+contains, matches, startswith, and endswith.  value is itself a template       
+statement so you can use one or more template fields in value which will be    
+resolved before the comparison occurs. When applied to multi-valued fields (ie.
+lists), the comparison is applied to each value in the list and evaluates to   
+True if any of the values match.                                               
 
 For example:                                                                   
 
@@ -375,8 +391,8 @@ useful if you want to re-use a complex template value in multiple places within
 your template string or for allowing the use of characters that would otherwise
 be prohibited in a template string. For example, the "pipe" (|) character is   
 not allowed in a find/replace pair but you can get around this limitation like 
-so: {var:pipe,|}{audio:title[-,%pipe]} which replaces the - character with |   
-(the value of %pipe).                                                          
+so: {var:pipe,{pipe}}{audio:title[-,%pipe]} which replaces the - character with
+| (the value of %pipe).                                                        
 
 Variables can also be referenced as fields in the template string, for example:
 {var:year,created.year}{filepath.stem}-{%year}{filepath.suffix}. In some cases,
@@ -442,9 +458,17 @@ codes. For example:
  • {format:str:-^30,{audio.title}} will center the title of an audio file and  
    pad it to 30 characters with '-'.                                           
 
-TYPE must be one of 'int', 'float', or 'str'. See                              
-https://docs.python.org/3.7/library/string.html#formatspec for more information
-on valid FORMAT values.                                                        
+TYPE must be one of 'int', 'float', or 'str'.                                  
+
+FORMAT may be a string or an variable. A variable may be helpful when you need 
+to use a character in the format string that would otherwise not be allowed.   
+For example, to use a comma separator, you could do this:                      
+
+{var:commaformat,{comma}}{format:int:%commaformat,{created.year}} which        
+transforms "2021" to "2,021"                                                   
+
+See https://docs.python.org/3.7/library/string.html#formatspec for more        
+information on valid FORMAT values.                                            
 
 File Information Fields                                                        
 
