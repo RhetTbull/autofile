@@ -102,6 +102,7 @@ class MTLParser:
     def __init__(
         self,
         get_field_values: Callable,
+        get_filter_values: Optional[Callable] = None,
         sanitize: Optional[Callable] = None,
         sanitize_value: Optional[Callable] = None,
         expand_inplace: bool = False,
@@ -112,7 +113,10 @@ class MTLParser:
 
         Args:
             get_field_values: function to get the values for a template; has signature
-                get_field_values(filepath: str, field: str, subfield: str, default: List[str]) -> Optional[List[Optional[str]]]
+                get_field_values(field: str, subfield: str, default: List[str]) -> Optional[List[Optional[str]]]
+            get_filter_values: optional function to handle custom filter, has signature
+                get_filter_values(filtername: str, filterarg: Optional[str], values: List[str]) -> List[str]
+                should raise SyntaxError if filtername is not handled
             sanitize: optional function to sanitize the rendered string (for example, to validate the string conforms to a valid filename); has signature:
                 sanitize(value: str) -> str
             sanitize_value: optional function to sanitize the value of a field; has signature:
@@ -125,13 +129,14 @@ class MTLParser:
         # get parser singleton
         self.parser = MTLParserModel()
 
-        # list of methods to call (in order) to get the values for a field
+        # list of functions to call (in order) to get the values for a field
         self.field_values = [
             get_field_values,
             self.get_punctuation_values,
             self.get_format_values,
         ]
 
+        self.filter_values = get_filter_values
         self.sanitize = sanitize
         self.sanitize_value = sanitize_value
         self.expand_inplace = expand_inplace
@@ -589,6 +594,9 @@ class MTLParser:
             value = [v for v in values if v != args]
         # elif filter_.startswith("function:"):
         # value = self.get_template_value_filter_function(filter_, values)
+        elif self.filter_values:
+            # call filter function supplied in __init__
+            value = self.filter_values(filter_, args, values)
         else:
             raise SyntaxError(f"Unhandled filter: {filter_}")
         return value

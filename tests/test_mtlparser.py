@@ -76,6 +76,7 @@ TEST_DATA = [
     ["{list|uniq|sort|append(d)}", ["a", "b", "c", "d"]],
     ["{list|uniq|sort|prepend(d)}", ["d", "a", "b", "c"]],
     ["{list|uniq|sort|remove(b)}", ["a", "c"]],
+    ["{list|uniq|sort|remove(x)}", ["a", "b", "c"]],
     ["{foo contains Foo?{foo|remove(Foo)},{foo}}", ["Bar"]],
     # format
     ["{strip,{fizz}}", ["fizz buzz"]],
@@ -130,6 +131,7 @@ FILTER_ARGS_REQUIRED = ["split", "chop", "chomp", "join", "append", "prepend", "
 class CustomParser:
     def __init__(
         self,
+        get_filter_values=None,
         sanitize=None,
         sanitize_value=None,
         expand_inplace=False,
@@ -138,6 +140,7 @@ class CustomParser:
     ):
         self.parser = MTLParser(
             get_field_values=self.get_field_values,
+            get_filter_values=get_filter_values,
             sanitize=sanitize,
             sanitize_value=sanitize_value,
             expand_inplace=expand_inplace,
@@ -200,6 +203,13 @@ def test_template_var_error():
         template.render("{%bar}")
 
 
+def test_none_str():
+    """Test custom none_str"""
+    template = CustomParser(none_str="NOPE!")
+    result = template.render("{baz}")
+    assert result == ["NOPE!"]
+
+
 def test_sanitize():
     """Test sanitize function"""
     template = CustomParser(sanitize=lambda x: x.upper())
@@ -229,6 +239,45 @@ def test_sanitize_value_2():
     assert result == ["Foo bar"]
 
 
+def test_filter_value():
+    """Test get_filter_value function"""
+
+    def filter_value(filtername, arg, values):
+        if filtername != "fubar":
+            raise SyntaxError("Unknown filter: {filtername}")
+        return [v.replace("oo", "u") for v in values]
+
+    template = CustomParser(get_filter_values=filter_value)
+    result = template.render("{foo|fubar}")
+    assert result == ["Fu", "Bar"]
+
+
+def test_filter_value_args():
+    """Test get_filter_value function that takes args"""
+
+    def filter_value(filtername, arg, values):
+        if filtername != "fubar":
+            raise SyntaxError("Unknown filter: {filtername}")
+        return [v.replace("oo", arg) for v in values]
+
+    template = CustomParser(get_filter_values=filter_value)
+    result = template.render("{foo|fubar(x)}")
+    assert result == ["Fx", "Bar"]
+
+
+def test_filter_value_unhandled():
+    """Test get_filter_value function that isn't handled"""
+
+    def filter_value(filtername, arg, values):
+        if filtername != "fubar":
+            raise SyntaxError("Unknown filter: {filtername}")
+        return [v.replace("oo", arg) for v in values]
+
+    template = CustomParser(get_filter_values=filter_value)
+    with pytest.raises(SyntaxError):
+        result = template.render("{foo|nope}")
+
+
 def test_filter_args_required():
     """Test that filters called without args raises exception"""
     template = CustomParser()
@@ -238,3 +287,10 @@ def test_filter_args_required():
     for filter_name in FILTER_ARGS_REQUIRED:
         with pytest.raises(SyntaxError):
             template.render(f"{{foo|{filter_name}()}}")
+
+
+def test_filter_error():
+    """Test that unknown filter raises exception"""
+    template = CustomParser()
+    with pytest.raises(SyntaxError):
+        template.render("{foo|nope}")
