@@ -592,8 +592,6 @@ class MTLParser:
         elif filter_ == "remove":
             # remove value from list
             value = [v for v in values if v != args]
-        # elif filter_.startswith("function:"):
-        # value = self.get_template_value_filter_function(filter_, values)
         elif self.filter_values:
             # call filter function supplied in __init__
             value = self.filter_values(filter_, args, values)
