@@ -1,4 +1,4 @@
-autofile contains a rich templating system which allows fine-grained control over the output format of metadata. The templating system converts one or template statements, written in metadata templating language (MTL), to one or more rendered values using metadata information from the file being processed. 
+autofile contains a rich templating system which allows fine-grained control over the output format of metadata. The templating system converts one or template statements, written in metadata templating language (MTL), to one or more rendered values using metadata information from the file being processed.
 
 In its simplest form, a template statement has the form: `"{template_field}"`, for example `"{size}"` which resolves to the size of the file. Template fields may also have subfields delineated by a `:` as in `"{audio:artist}"` which resolves to the artist name for an audio file (e.g. mp3).  In this example, the field is `audio` and the subfield is `artist`.  Template fields may also have attributes delineated by a `.` as in `"{created.year}"` which resolves to the 4-digit year of the file creation date. In this example, the field is `created` and the attribute is `year`.
 
@@ -98,7 +98,7 @@ For example:
 - `{exiftool:Keywords|lower contains beach}` uses the lower case filter to do case-insensitive matching to match any keyword that contains the word 'beach'.
 - `{exiftool:Keywords|lower not contains beach}` uses the `not` modifier to negate the comparison so this resolves to True if there is no keyword that matches 'beach'.
 - `{docx:author startswith John}` resolves to True if the author of a docx file starts with 'John'.
-- `{audo:bitrate == 320}` resolves to True if the audio file's bitrate is 320 kbps.
+- `{audio:bitrate == 320}` resolves to True if the audio file's bitrate is 320 kbps.
 
 **Boolean Values**
 

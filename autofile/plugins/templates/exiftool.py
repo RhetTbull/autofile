@@ -45,12 +45,12 @@ def get_template_help() -> Iterable:
     text = """
     The `{exiftool}` template uses the third-party exiftool app (https://exiftool.org) to extract metadata from photo and video files.
 
-    It must be used with one or more subfields which are exiftool tags, for example: `{exiftool:EXIF:Make}` for camera make, 
-    or `{exiftool:IPTC:Keywords}` for keywords. The exiftool Group name (e.g. `IPTC`) is optional. 
+    It must be used with one or more subfields which are exiftool tags, for example: `{exiftool:EXIF:Make}` for camera make,
+    or `{exiftool:IPTC:Keywords}` for keywords. The exiftool Group name (e.g. `IPTC`) is optional.
 
-    There are two derived subfields: `created` and `modified` which represent the created date or the modified date, respectively. 
+    There are two derived subfields: `created` and `modified` which represent the created date or the modified date, respectively.
     These subfields are datetime values and you can access the various attributes of the datetime by using an
-    attribute name following a period, e.g. `{exiftool:created.year}` for the 4-digit year. 
+    attribute name following a period, e.g. `{exiftool:created.year}` for the 4-digit year.
 
     The following attributes are supported:
 
@@ -127,10 +127,10 @@ def get_template_value(
                         datetime.datetime.fromisoformat(v).strftime(default[0])
                         for v in values
                     ]
-                except:
+                except Exception:
                     raise ValueError(f"Invalid strftime template: '{default}'")
             else:
-                value = None
+                values = None
         else:
             values = [
                 getattr(
@@ -201,7 +201,7 @@ def exiftool_date_to_datetime(date: str) -> datetime.datetime:
     for dt_format in date_time_formats:
         try:
             parsed_date = datetime.datetime.strptime(date, dt_format)
-        except ValueError as e:
+        except ValueError:
             pass
         else:
             return parsed_date

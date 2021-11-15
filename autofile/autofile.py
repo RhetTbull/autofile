@@ -5,7 +5,7 @@ import re
 from typing import Callable, List, Optional, Union
 
 from .constants import NONE_STR_SENTINEL
-from .filetemplate import FileTemplate, UnknownFieldError
+from .filetemplate import FileTemplate
 from .pathlibutil import PathlibUtil
 from .renderoptions import RenderOptions
 from .utils import noop

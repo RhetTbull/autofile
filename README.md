@@ -330,7 +330,7 @@ For example:
    'beach'.                                                                    
  • {docx:author startswith John} resolves to True if the author of a docx file 
    starts with 'John'.                                                         
- • {audo:bitrate == 320} resolves to True if the audio file's bitrate is 320   
+ • {audio:bitrate == 320} resolves to True if the audio file's bitrate is 320  
    kbps.                                                                       
 
 Boolean Values                                                                 
@@ -440,7 +440,7 @@ fields to do so. For example, {openbrace}value{closebrace} will render to
 String Formatting Fields                                                       
 
 Field     Description
-{strip}   Use in form '{strip,TEMPLATE}'; strips whitespace from begining and
+{strip}   Use in form '{strip,TEMPLATE}'; strips whitespace from beginning and
           end of rendered TEMPLATE value(s).
 {format}  Use in form, '{format:TYPE:FORMAT,TEMPLATE}'; converts TEMPLATE value
           to TYPE then formats the value using python string formatting codes

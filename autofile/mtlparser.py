@@ -7,8 +7,7 @@
 import pathlib
 import re
 import shlex
-from textwrap import dedent
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, List, Optional
 
 from textx import TextXSyntaxError, metamodel_from_file
 
@@ -50,10 +49,11 @@ PUNCTUATION_FIELDS = {
 
 FORMAT_FIELDS = {
     "{strip}": [
-        "Use in form '{strip,TEMPLATE}'; strips whitespace from begining and end of rendered TEMPLATE value(s)."
+        "Use in form '{strip,TEMPLATE}'; strips whitespace from beginning and end of rendered TEMPLATE value(s)."
     ],
     "{format}": [
-        "Use in form, '{format:TYPE:FORMAT,TEMPLATE}'; converts TEMPLATE value to TYPE then formats the value using python string formatting codes specified by FORMAT; TYPE is one of: 'int', 'float', or 'str'."
+        "Use in form, '{format:TYPE:FORMAT,TEMPLATE}'; converts TEMPLATE value to TYPE then formats the value "
+        + "using python string formatting codes specified by FORMAT; TYPE is one of: 'int', 'float', or 'str'."
     ],
 }
 
@@ -340,7 +340,7 @@ class MTLParser:
                             return ["True"]
                         else:
                             return []
-                    except ValueError as e:
+                    except ValueError:
                         raise SyntaxError(
                             f"comparison operators may only be used with values that can be converted to numbers: {vals} {conditional_value}"
                         )
