@@ -29,21 +29,20 @@ def filter_file(
 
     glob_match = False
     if glob:
-        glob_match = any(fnmatch.fnmatch(filepath.name, pattern) for pattern in glob)
+        glob_match = all(fnmatch.fnmatch(filepath.name, pattern) for pattern in glob)
 
     regex_match = False
     if regex:
-        regex_match = any(re.search(pattern, filepath.name) for pattern in regex)
+        regex_match = all(re.search(pattern, filepath.name) for pattern in regex)
 
-    filter_match = False
+    filter_match = 0
     if filter_template:
         options = RenderOptions(none_str=NONE_STR_SENTINEL)
         for pattern in filter_template:
             results = FileTemplate(filepath).render(pattern, options=options)
             if results and all(NONE_STR_SENTINEL not in result for result in results):
-                filter_match = True
-                break
-
+                filter_match += 1
+        filter_match = filter_match == len(filter_template)
     return (
         (glob_match if glob else True)
         and (regex_match if regex else True)

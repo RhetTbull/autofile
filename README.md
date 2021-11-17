@@ -138,14 +138,13 @@ Filter Options:
   -g, --glob PATTERN             Filter files to process with a glob pattern,
                                  e.g. '--glob "*.jpg"' --glob may be repeated
                                  to use more than one pattern. Multiple
-                                 patterns treated as "OR", that is, a file that
-                                 matches one or more patterns will be
-                                 processed.
+                                 patterns treated as "AND", that is, a file
+                                 that matches all patterns will be processed.
   -r, --regex PATTERN            Filter files to process with a regex pattern,
                                  e.g. '--regex "IMG_[1-3].*"' --regex may be
                                  repeated to use more than one pattern.
-                                 Multiple patterns treated as "OR", that is, a
-                                 file that matches one or more patterns will be
+                                 Multiple patterns treated as "AND", that is, a
+                                 file that matches all patterns will be
                                  processed. Any valid python regular express
                                  may be used.
   -f, --filter TEMPLATE_PATTERN  Filter files to process that match a metadata
@@ -154,9 +153,8 @@ Filter Options:
                                  matches the file if TEMPLATE_PATTERN evaluates
                                  to a non-null value. --filter may be repeated
                                  to use more than one pattern. Multiple
-                                 patterns treated as "OR", that is, a file that
-                                 matches one or more patterns will be
-                                 processed.
+                                 patterns treated as "AND", that is, a file
+                                 that matches all patterns will be processed.
 
 Options:
   -w, --walk                     Recursively walk directories.
