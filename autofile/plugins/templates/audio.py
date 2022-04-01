@@ -12,7 +12,7 @@
 
 from typing import Iterable, List, Optional
 
-from tinytag import TinyTag, TinyTagException
+from tinytag.tinytag import TinyTag, TinyTagException
 
 import autofile
 

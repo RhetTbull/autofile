@@ -328,7 +328,7 @@ For example:
    'beach'.                                                                    
  • {docx:author startswith John} resolves to True if the author of a docx file 
    starts with 'John'.                                                         
- • {audio:bitrate == 320} resolves to True if the audio file's bitrate is 320  
+ • {audio:bitrate == 320.0} resolves to True if the audio file's bitrate is 320.0  
    kbps.                                                                       
 
 Boolean Values                                                                 

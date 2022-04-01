@@ -176,10 +176,10 @@ TEST_DATA = [
     [AUDIO_FILE, "{audio:bitrate not < 320?YES,NO}", ["YES"]],
     [AUDIO_FILE, "{audio:bitrate > 320?YES,NO}", ["NO"]],
     [AUDIO_FILE, "{audio:bitrate > 0?YES,NO}", ["YES"]],
-    [AUDIO_FILE, "{audio:bitrate == 320?YES,NO}", ["YES"]],
+    [AUDIO_FILE, "{audio:bitrate == 320.0?YES,NO}", ["YES"]],
     [AUDIO_FILE, "{audio:bitrate == 0?YES,NO}", ["NO"]],
     [AUDIO_FILE, "{audio:bitrate != 0?YES,NO}", ["YES"]],
-    [AUDIO_FILE, "{audio:bitrate != 320?YES,NO}", ["NO"]],
+    [AUDIO_FILE, "{audio:bitrate != 320.0?YES,NO}", ["NO"]],
     [PHOTO_FILE, "{exiftool:IPTC:Keywords contains pears?YES,NO}", ["YES"]],
     [PHOTO_FILE, "{exiftool:IPTC:Keywords not contains pears?YES,NO}", ["NO"]],
     [
@@ -212,7 +212,7 @@ TEST_DATA = [
     # format, strip
     [AUDIO_FILE, "{format:int:04d,{audio:bitrate}}", ["0320"]],
     [AUDIO_FILE, "{format:int:05d,{audio:bitrate}}", ["00320"]],
-    [AUDIO_FILE, "{format:str:-^11,{audio:bitrate}}", ["----320----"]],
+    [AUDIO_FILE, "{format:str:-^11,{audio:bitrate}}", ["---320.0---"]],
     [
         DOC_FILE_1,
         "{var:commaformat,{comma}}{format:int:%commaformat,{created.year}}",

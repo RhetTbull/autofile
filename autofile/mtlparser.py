@@ -479,7 +479,8 @@ class MTLParser:
                     f"'{type_}' is not a valid type for {format}: must be one of 'int', 'float', 'str'"
                 )
             if type_ == "int":
-                default_ = [int(v) for v in default]
+                # convert to float then int to avoid error when converting a string float to int
+                default_ = [int(float(v)) for v in default]
             elif type_ == "float":
                 default_ = [float(v) for v in default]
             else:
@@ -499,19 +500,15 @@ class MTLParser:
         else:
             args = None
 
-        if (
-            filter_
-            in [
-                "split",
-                "chop",
-                "chomp",
-                "join",
-                "append",
-                "prepend",
-                "remove",
-            ]
-            and (args is None or not len(args))
-        ):
+        if filter_ in [
+            "split",
+            "chop",
+            "chomp",
+            "join",
+            "append",
+            "prepend",
+            "remove",
+        ] and (args is None or not len(args)):
             raise SyntaxError(f"{filter_} requires arguments")
 
         if filter_ == "lower":
