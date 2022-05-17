@@ -49,13 +49,13 @@ def test_cli_directory(source, target):
             "--target",
             str(target),
             "--directory",
-            "{modified.year}",
+            "{filepath.suffix|chomp(1)}",
             *[str(p) for p in source_files],
         ],
     )
     assert result.exit_code == 0
     assert "Moving" in result.output
-    for p in ["2021/flowers.jpeg", "2021/pears.jpg", "2021/warm_lights.mp3"]:
+    for p in ["jpeg/flowers.jpeg", "jpg/pears.jpg", "mp3/warm_lights.mp3"]:
         target_file = target / p
         assert target_file.exists()
     # Check that source files don't exist (they got moved)
