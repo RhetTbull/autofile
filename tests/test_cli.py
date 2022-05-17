@@ -77,13 +77,13 @@ def test_cli_directory_dry_run(source, target):
             "--target",
             str(target),
             "--directory",
-            "{modified.year}",
+            "{filepath.suffix|chomp(1)}",
             *[str(p) for p in source_files],
         ],
     )
     assert result.exit_code == 0
     assert "Moving" in result.output
-    for p in ["2021/flowers.jpeg", "2021/pears.jpg", "2021/warm_lights.mp3"]:
+    for p in ["jpeg/flowers.jpeg", "jpg/pears.jpg", "mp3/warm_lights.mp3"]:
         target_file = target / p
         assert not target_file.exists()
     # Check that source files exist (they did not get moved)
@@ -105,13 +105,13 @@ def test_cli_directory_copy(source, target):
             str(target),
             "--copy",
             "--directory",
-            "{modified.year}",
+            "{filepath.suffix|chomp(1)}",
             *[str(p) for p in source_files],
         ],
     )
     assert result.exit_code == 0
     assert "Copying" in result.output
-    for p in ["2021/flowers.jpeg", "2021/pears.jpg", "2021/warm_lights.mp3"]:
+    for p in ["jpeg/flowers.jpeg", "jpg/pears.jpg", "mp3/warm_lights.mp3"]:
         target_file = target / p
         assert target_file.exists()
     # Check that source files didn't get moved
@@ -133,13 +133,13 @@ def test_cli_directory_hardlink(source, target):
             str(target),
             "--hardlink",
             "--directory",
-            "{modified.year}",
+            "{filepath.suffix|chomp(1)}",
             *[str(p) for p in source_files],
         ],
     )
     assert result.exit_code == 0
     assert "Hardlinking" in result.output
-    for p in ["2021/flowers.jpeg", "2021/pears.jpg", "2021/warm_lights.mp3"]:
+    for p in ["jpeg/flowers.jpeg", "jpg/pears.jpg", "mp3/warm_lights.mp3"]:
         target_file = target / p
         assert target_file.exists()
         source_file = [s for s in source_files if s.name == target_file.name][0]
@@ -162,14 +162,14 @@ def test_cli_directory_walk(source, target):
             "--target",
             str(target),
             "--directory",
-            "{modified.year}",
+            "{filepath.suffix|chomp(1)}",
             "--walk",
             str(source),
         ],
     )
     assert result.exit_code == 0
     assert "Moving" in result.output
-    for p in ["2021/flowers.jpeg", "2021/pears.jpg", "2021/warm_lights.mp3"]:
+    for p in ["jpeg/flowers.jpeg", "jpg/pears.jpg", "mp3/warm_lights.mp3"]:
         target_file = target / p
         assert target_file.exists()
     # Check that source files don't exist (they got moved)
@@ -220,13 +220,13 @@ def test_cli_filename(source, target):
             "--target",
             str(target),
             "--filename",
-            "{modified.year}-{filepath.name}",
+            "{filepath.suffix|chomp(1)}-{filepath.name}",
             *[str(p) for p in source_files],
         ],
     )
     assert result.exit_code == 0
     assert "Moving" in result.output
-    for p in ["2021-flowers.jpeg", "2021-pears.jpg", "2021-warm_lights.mp3"]:
+    for p in ["jpeg-flowers.jpeg", "jpg-pears.jpg", "mp3-warm_lights.mp3"]:
         target_file = target / p
         assert target_file.exists()
     # Check that source files don't exist (they got moved)
@@ -247,7 +247,7 @@ def test_cli_filename_directory(source, target):
             "--target",
             str(target),
             "--filename",
-            "{modified.year}-{filepath.name}",
+            "{filepath.suffix|chomp(1)}-{filepath.name}",
             "--directory",
             "{exiftool:Make}",
             *[str(p) for p in source_files],
@@ -256,9 +256,9 @@ def test_cli_filename_directory(source, target):
     assert result.exit_code == 0
     assert "Moving" in result.output
     for p in [
-        "Apple/2021-flowers.jpeg",
-        "Apple/2021-pears.jpg",
-        "_/2021-warm_lights.mp3",
+        "Apple/jpeg-flowers.jpeg",
+        "Apple/jpg-pears.jpg",
+        "_/mp3-warm_lights.mp3",
     ]:
         target_file = target / p
         assert target_file.exists()
@@ -281,7 +281,7 @@ def test_cli_filename_directory_filter(source, target):
             "--target",
             str(target),
             "--filename",
-            "{modified.year}-{filepath.name}",
+            "{filepath.suffix|chomp(1)}-{filepath.name}",
             "--directory",
             "{exiftool:Make}",
             "--filter",
@@ -298,10 +298,10 @@ def test_cli_filename_directory_filter(source, target):
 
     assert "Processed 2" in output
 
-    for p in ["Apple/2021-flowers.jpeg", "Apple/2021-pears.jpg"]:
+    for p in ["Apple/jpeg-flowers.jpeg", "Apple/jpg-pears.jpg"]:
         target_file = target / p
         assert target_file.exists()
-    for p in ["_/2021-warm_lights.mp3"]:
+    for p in ["_/mp3-warm_lights.mp3"]:
         target_file = target / p
         assert not target_file.exists()
     # Check that source files don't exist (they got moved)
@@ -326,7 +326,7 @@ def test_cli_directory_regex(source, target):
             "--target",
             str(target),
             "--directory",
-            "{modified.year}",
+            "{filepath.suffix|chomp(1)}",
             "--regex",
             r".*\.jpg",
             *[str(p) for p in source_files],
@@ -335,7 +335,7 @@ def test_cli_directory_regex(source, target):
     assert result.exit_code == 0
     output = str(result.output)
     assert "Moving" in output
-    for p in ["2021/pears.jpg"]:
+    for p in ["jpg/pears.jpg"]:
         target_file = target / p
         assert target_file.exists()
 
@@ -366,13 +366,13 @@ def test_cli_directory_quiet(source, target):
             "--target",
             str(target),
             "--directory",
-            "{modified.year}",
+            "{filepath.suffix|chomp(1)}",
             *[str(p) for p in source_files],
         ],
     )
     assert result.exit_code == 0
     assert "Moving" not in result.output
-    for p in ["2021/flowers.jpeg", "2021/pears.jpg", "2021/warm_lights.mp3"]:
+    for p in ["jpeg/flowers.jpeg", "jpg/pears.jpg", "mp3/warm_lights.mp3"]:
         target_file = target / p
         assert target_file.exists()
     # Check that source files don't exist (they got moved)
