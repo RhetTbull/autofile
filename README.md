@@ -1,6 +1,6 @@
 # autofile
 
-Mac command line app (written in python) to automatically move or copy files based on metadata associated with the files.  For example, file your photos based on EXIF metadata or use MP3 tags to file your music files.
+Command line app (written in python) to automatically move or copy files based on metadata associated with the files.  For example, file your photos based on EXIF metadata or use MP3 tags to file your music files.
 
 autofile uses a template system to specify the target directory and/or filename based on the file's metadata.  For example: 
 
@@ -105,9 +105,9 @@ $ tree ~/Music/Filed
 
 ## Supported Platforms
 
-Currently macOS only. Tested on macOS 10.15.7 (Catalina) but should work fine on newer versions. With the exception of macOS specific metadata like Finder tags, this could be ported to linux fairly easily but I don't have a use case for this.  
+Currently tested on macOS and Ubuntu Linux. Tested on macOS 10.15.7 (Catalina) but should work fine on newer versions. Some of the features such as Finder tags are macOS specific and will not be available on other platforms.
 
-Copy and move use native macOS calls to take advantage of advanced features such as copy-on-write that are not available with the standard python system calls. 
+On macOS, copy and move use native macOS API calls to take advantage of advanced features such as copy-on-write that are not available with the standard python system calls. 
 
 ## Cautions and Warnings
 
@@ -328,7 +328,7 @@ For example:
    'beach'.                                                                    
  • {docx:author startswith John} resolves to True if the author of a docx file 
    starts with 'John'.                                                         
- • {audio:bitrate == 320.0} resolves to True if the audio file's bitrate is 320.0  
+ • {audio:bitrate == 320} resolves to True if the audio file's bitrate is 320  
    kbps.                                                                       
 
 Boolean Values                                                                 
@@ -480,7 +480,8 @@ Field    Description
 Date/Time Fields                                                               
 
 Field       Description
-{created}   File creation date/time
+{created}   File creation date/time (MacOS only; only other platforms returns
+            file inode change time)
 {modified}  File modification date/time
 {accessed}  File last accessed date/time
 {today}     The current date/time (as of when {today} is first evaluated)
@@ -558,7 +559,7 @@ Field   Description
 macOS mdls command. For example, {mdls:kMDItemContentType} returns the content 
 type of the file, e.g. public.python-script or public.mp3 and                  
 {mdls:kMDItemKind} returns a description of file type, e.g. Python Script or   
-MP3 Audio.                                                                     
+MP3 Audio. Available only on macOS.                                            
 
 Finder Metadata                                                                
 
@@ -566,8 +567,8 @@ Field     Description
 {finder}  Get metadata managed by macOS Finder such as tags and comments; use
           in form '{finder:SUBFIELD}', e.g. '{finder:tags}'
 
-{finder} provides access to Finder metadata. It must be used in the form       
-{finder:SUBFIELD} where SUBFIELD is one of the following:                      
+{finder} provides access to Finder metadata; available only on macOS. It must  
+be used in the form {finder:SUBFIELD} where SUBFIELD is one of the following:  
 
 Subfield  Description
 tags      Finder tags (keywords)
@@ -580,7 +581,7 @@ Field  Description
 
 The {uti} template returns the macOS Uniform Type Identifier (UTI) for the     
 file. For example, {uti} for a file with extension .pdf would return           
-com.adobe.pdf.                                                                 
+com.adobe.pdf. Available only on macOS.                                        
 
 Audio Files                                                                    
 

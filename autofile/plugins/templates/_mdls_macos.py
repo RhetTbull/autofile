@@ -20,7 +20,8 @@ def get_template_help() -> Iterable:
     text = """
     `{mdls:ATTRIBUTE}` returns the value of the metadata ATTRIBUTE as returned by the macOS `mdls` command. 
     For example, `{mdls:kMDItemContentType}` returns the content type of the file, e.g. `public.python-script` or `public.mp3` 
-    and `{mdls:kMDItemKind}` returns a description of file type, e.g. `Python Script` or `MP3 Audio`.
+    and `{mdls:kMDItemKind}` returns a description of file type, e.g. `Python Script` or `MP3 Audio`. 
+    Available only on macOS.
     """
     fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
     return ["**macOS Metadata Fields**", fields, text]

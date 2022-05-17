@@ -16,7 +16,7 @@ SUBFIELDS = {"tags": "Finder tags (keywords)", "comment": "Finder comment"}
 @autofile.hookimpl
 def get_template_help() -> Iterable:
     text = """
-    `{finder}` provides access to Finder metadata. It must be used in the form `{finder:SUBFIELD}`
+    `{finder}` provides access to Finder metadata; available only on macOS. It must be used in the form `{finder:SUBFIELD}` 
     where SUBFIELD is one of the following:
     """
 

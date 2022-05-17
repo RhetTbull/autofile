@@ -36,7 +36,8 @@ FIELDS = {
 def get_template_help() -> Iterable:
     text = """
     The `{uti}` template returns the macOS Uniform Type Identifier (UTI) for the file.
-    For example, `{uti}` for a file with extension .pdf would return `com.adobe.pdf`.
+    For example, `{uti}` for a file with extension .pdf would return `com.adobe.pdf`. 
+    Available only on macOS.
     """
     fields = [["Field", "Description"], *[[k, v] for k, v in FIELDS.items()]]
     return ["**Uniform Type Identifier (UTI) Fields**", fields, text]
