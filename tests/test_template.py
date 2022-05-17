@@ -61,8 +61,6 @@ TEST_DATA = [
     [PHOTO_FILE, "{exiftool:IPTC:Keywords contains pears?pears,not_pears}", ["pears"]],
     # strip
     [PHOTO_FILE, "{strip, Foo Bar }", ["Foo Bar"]],
-    # uti
-    [PHOTO_FILE, "{uti}", ["public.jpeg"]],
     # mp3 file
     [AUDIO_FILE, "{audio:title}", ["Warm Lights (ft. Apoxode)"]],
     [AUDIO_FILE, "{audio:artist}", ["Darkroom"]],
@@ -211,9 +209,12 @@ TEST_DATA = [
 
 if sys.platform == "darwin":
     # these only run on macOS
-    TEST_DATA += [  # mdls
+    TEST_DATA += [
+        # mdls
         [PHOTO_FILE, "{mdls:kMDItemKind}", ["JPEG image"]],
         [AUDIO_FILE, "{mdls:kMDItemContentType}", ["public.mp3"]],
+        # uti
+        [PHOTO_FILE, "{uti}", ["public.jpeg"]],
     ]
 
 if platform.node() == "Rhets-MacBook-Pro.local":
