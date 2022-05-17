@@ -32,7 +32,7 @@ jobs:
         python -m pip install -r requirements_dev.txt
         python -m pip install -r requirements.txt
     - name: Install exiftool
-      if: contains(${{ matrix.os }}, 'ubuntu')
+      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt install libimage-exiftool-perl
     - name: Lint with flake8
