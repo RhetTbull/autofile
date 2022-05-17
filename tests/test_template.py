@@ -236,7 +236,7 @@ TEST_DATA = [
 @pytest.fixture
 def setlocale():
     # set locale and timezone for testing
-    locale.setlocale(locale.LC_ALL, "en_US")
+    locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
     tz = os.environ.get("TZ")
     os.environ["TZ"] = "US/Pacific"
     yield
