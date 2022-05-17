@@ -31,10 +31,17 @@ jobs:
         python -m pip install flake8
         python -m pip install -r requirements_dev.txt
         python -m pip install -r requirements.txt
-    - name: Install exiftool
-      if: contains(${{ matrix.os }}, 'ubuntu')
+    - name: Install exiftool ubuntu
+      if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt install libimage-exiftool-perl
+    - name: Install exiftool macos
+      if: matrix.os == 'macos-10.15'
+      run: |
+        curl https://exiftool.org/Image-ExifTool-12.41.tar.gz --output Image-ExifTool-12.41.tar.gz
+        tar -xzf Image-ExifTool-12.41.tar.gz
+        cd Image-ExifTool-12.41
+        sudo cp -r exiftool lib /usr/local/bin
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
