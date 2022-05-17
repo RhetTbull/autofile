@@ -52,7 +52,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
     ],
     install_requires=[
-        "click==8.0.1,<9.0.0",
+        "click>=8.0.1,<9.0.0",
         "cloup>=0.11.0,<0.14.0",
         "pathvalidate>=2.5.0,<3.0.0",
         "pdfminer.six>=20211012",
