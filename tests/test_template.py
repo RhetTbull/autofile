@@ -48,7 +48,6 @@ PUNCTUATION = {
 
 TEST_DATA = [
     # dates and paths
-    [PHOTO_FILE, "{modified.year}", ["2021"]],
     [PHOTO_FILE, "{filepath.name}", ["pears.jpg"]],
     [PHOTO_FILE, "{filepath.stem}", ["pears"]],
     [PHOTO_FILE, "{filepath.parent.name}", ["test_files"]],
@@ -60,9 +59,6 @@ TEST_DATA = [
     [PHOTO_FILE, "{,+exiftool:Keywords}", ["fruit,pears"]],
     [PHOTO_FILE, "{exiftool:EXIF:Make}", ["Apple"]],
     [PHOTO_FILE, "{exiftool:IPTC:Keywords contains pears?pears,not_pears}", ["pears"]],
-    # mdls
-    [PHOTO_FILE, "{mdls:kMDItemKind}", ["JPEG image"]],
-    [AUDIO_FILE, "{mdls:kMDItemContentType}", ["public.mp3"]],
     # strip
     [PHOTO_FILE, "{strip, Foo Bar }", ["Foo Bar"]],
     # uti
@@ -223,8 +219,15 @@ TEST_DATA = [
     [DOC_FILE_1, "{strip,   Foo Bar   }", ["Foo Bar"]],
 ]
 
+if sys.platform == "darwin":
+    # these only run on macOS
+    TEST_DATA += [  # mdls
+        [PHOTO_FILE, "{mdls:kMDItemKind}", ["JPEG image"]],
+        [AUDIO_FILE, "{mdls:kMDItemContentType}", ["public.mp3"]],
+    ]
+
 if platform.node() == "Rhets-MacBook-Pro.local":
-    # these tests fail in GitHub Actions due to {created}
+    # these tests fail in GitHub Actions due to {created}, {modified} dates differing
     TEST_DATA += [
         [PHOTO_FILE, "{created.year}", ["2021"]],
         [PHOTO_FILE, "{created.mm}", ["11"]],
@@ -235,6 +238,7 @@ if platform.node() == "Rhets-MacBook-Pro.local":
             ["2021-21-November-Nov-11-03-Wednesday-307-05-33-33"],
         ],
         [PHOTO_FILE, "{created.strftime,%Y-%U}", ["2021-44"]],
+        [PHOTO_FILE, "{modified.year}", ["2021"]],
     ]
 
 
