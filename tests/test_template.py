@@ -2,10 +2,10 @@
 
 import locale
 import os
+import sys
 import platform
 import tempfile
 
-import osxmetadata
 import pytest
 from freezegun import freeze_time
 
@@ -14,6 +14,12 @@ from autofile.filetemplate import FileTemplate
 from autofile.mtlparser import SyntaxError
 from autofile.pathlibutil import PathlibUtil
 from autofile.renderoptions import RenderOptions
+
+try:
+    import osxmetadata
+except ImportError:
+    pass
+
 
 PHOTO_FILE = "tests/test_files/pears.jpg"
 AUDIO_FILE = "tests/test_files/warm_lights.mp3"
@@ -268,7 +274,7 @@ def test_template_render(data, setlocale):
     result = template.render(data[1], options=RenderOptions())
     assert result == data[2]
 
-
+@pytest.mark.skipif(sys.platform != "darwin", reason="Only runs on macOS")
 def test_template_finder():
     """Test {finder} template"""
     with tempfile.TemporaryDirectory() as tmpdir:
