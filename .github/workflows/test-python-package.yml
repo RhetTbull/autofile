@@ -31,10 +31,18 @@ jobs:
         python -m pip install flake8
         python -m pip install -r requirements_dev.txt
         python -m pip install -r requirements.txt
-    - name: Install exiftool
+    - name: Install exiftool ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: |
         sudo apt install libimage-exiftool-perl
+    - name: Install exiftool macos
+      if: matrix.os == 'macos-10.15'
+      run: |
+        mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
+        eval "$(homebrew/bin/brew shellenv)"
+        brew update --force --quiet
+        chmod -R go-w "$(brew --prefix)/share/zsh"
+        brew install exiftool
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
