@@ -206,16 +206,6 @@ TEST_DATA = [
     [AUDIO_FILE, "{format:int:04d,{audio:bitrate}}", ["0320"]],
     [AUDIO_FILE, "{format:int:05d,{audio:bitrate}}", ["00320"]],
     [AUDIO_FILE, "{format:str:-^11,{audio:bitrate}}", ["---320.0---"]],
-    [
-        DOC_FILE_1,
-        "{var:commaformat,{comma}}{format:int:%commaformat,{created.year}}",
-        ["2,021"],
-    ],
-    [
-        DOC_FILE_1,
-        "{format:int:n,{created.year}}",
-        ["2,021"],
-    ],
     [DOC_FILE_1, "{strip,   Foo Bar   }", ["Foo Bar"]],
 ]
 
@@ -239,6 +229,16 @@ if platform.node() == "Rhets-MacBook-Pro.local":
         ],
         [PHOTO_FILE, "{created.strftime,%Y-%U}", ["2021-44"]],
         [PHOTO_FILE, "{modified.year}", ["2021"]],
+        [
+            DOC_FILE_1,
+            "{var:commaformat,{comma}}{format:int:%commaformat,{created.year}}",
+            ["2,021"],
+        ],
+        [
+            DOC_FILE_1,
+            "{format:int:n,{created.year}}",
+            ["2,021"],
+        ],
     ]
 
 
