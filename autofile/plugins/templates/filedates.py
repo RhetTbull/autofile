@@ -2,6 +2,7 @@
 
 import datetime
 import os
+import sys
 from typing import Iterable, List, Optional
 
 import autofile
@@ -11,7 +12,7 @@ from autofile.datetime_utils import datetime_utc_to_local
 TODAY = None
 
 FIELDS = {
-    "{created}": "File creation date/time",
+    "{created}": "File creation date/time (MacOS only; only other platforms returns file inode change time)",
     "{modified}": "File modification date/time",
     "{accessed}": "File last accessed date/time",
     "{today}": "The current date/time (as of when {today} is first evaluated)",
@@ -81,7 +82,12 @@ def get_template_value(
     stat_info = os.stat(filepath)
     dt = None
     if field[0] == "created":
-        dt = datetime.datetime.fromtimestamp(stat_info.st_birthtime)
+        if sys.platform == "darwin":
+            # MacOS provides file creation date/time
+            dt = datetime.datetime.fromtimestamp(stat_info.st_birthtime)
+        else:
+            # use ctime for other platforms which is last inode change
+            dt = datetime.datetime.fromtimestamp(stat_info.st_ctime)
     elif field[0] == "modified":
         dt = datetime.datetime.fromtimestamp(stat_info.st_mtime)
     elif field[0] == "accessed":
