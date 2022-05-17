@@ -38,11 +38,10 @@ jobs:
     - name: Install exiftool macos
       if: matrix.os == 'macos-10.15'
       run: |
-        mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
-        eval "$(homebrew/bin/brew shellenv)"
-        brew update --force --quiet
-        chmod -R go-w "$(brew --prefix)/share/zsh"
-        brew install exiftool
+        curl https://exiftool.org/Image-ExifTool-12.41.tar.gz --output Image-ExifTool-12.41.tar.gz
+        tar -xzf Image-ExifTool-12.41.tar.gz
+        cd Image-ExifTool-12.41
+        sudo cp -r exiftool lib /usr/local/bin
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
