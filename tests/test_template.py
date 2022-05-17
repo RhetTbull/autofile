@@ -210,9 +210,6 @@ TEST_DATA = [
 if sys.platform == "darwin":
     # these only run on macOS
     TEST_DATA += [
-        # mdls
-        [PHOTO_FILE, "{mdls:kMDItemKind}", ["JPEG image"]],
-        [AUDIO_FILE, "{mdls:kMDItemContentType}", ["public.mp3"]],
         # uti
         [PHOTO_FILE, "{uti}", ["public.jpeg"]],
     ]
@@ -220,6 +217,10 @@ if sys.platform == "darwin":
 if platform.node() == "Rhets-MacBook-Pro.local":
     # these tests fail in GitHub Actions due to {created}, {modified} dates differing
     TEST_DATA += [
+        # mdls
+        [PHOTO_FILE, "{mdls:kMDItemKind}", ["JPEG image"]],
+        [AUDIO_FILE, "{mdls:kMDItemContentType}", ["public.mp3"]],
+        # {created} and {modified}
         [PHOTO_FILE, "{created.year}", ["2021"]],
         [PHOTO_FILE, "{created.mm}", ["11"]],
         [PHOTO_FILE, "{created.date}", ["2021-11-03"]],
