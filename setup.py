@@ -7,8 +7,8 @@ from setuptools import find_packages, setup
 
 PACKAGE_NAME = "autofile"
 
-if sys.version_info < (3, 7, 0):
-    sys.stderr.write(f"ERROR: You need Python 3.7 or later to use {PACKAGE_NAME}.\n")
+if sys.version_info < (3, 8, 0):
+    sys.stderr.write(f"ERROR: You need Python 3.8 or later to use {PACKAGE_NAME}.\n")
     exit(1)
 
 # we'll import stuff from the source tree, let's ensure is on the sys path
@@ -46,7 +46,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Intended Audience :: End Users/Desktop",
         "Operating System :: MacOS :: MacOS X",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -55,22 +54,25 @@ setup(
     install_requires=[
         "click==8.0.1,<9.0.0",
         "cloup>=0.11.0,<0.14.0",
-        "osxmetadata>=0.99.34,<1.0.0",
         "pathvalidate>=2.5.0,<3.0.0",
         "pdfminer.six>=20211012",
         "pluggy>=1.0.0,<=2.0.0",
+        "python-docx>=0.8.11,<1.0.0",
+        "rich>=11.0.0,<13.0.0",
+        "textX>=2.3.0,<3.0.0",
+        "tinytag>=1.8.0,<2.0.0",
+        "yaspin>=2.1.0,<3.0.0",
+    ]
+    + [
+        "osxmetadata>=0.99.34,<1.0.0",
         "pyobjc-core>=7.3,<9.0",
         "pyobjc-framework-Cocoa>=7.3,<9.0",
         "pyobjc-framework-CoreServices>=7.3,<9.0",
         "pyobjc-framework-FSEvents>=7.3,<9.0",
-        "python-docx>=0.8.11,<1.0.0",
-        "rich>=11.0.0,<13.0.0",
-        "textX>=2.3.0,<3.0.0",
-        "yaspin>=2.1.0",
-        "tinytag>=1.8.0,<2.0.0",
-        "yaspin>=2.1.0,<3.0.0",
-    ],
-    python_requires=">=3.7",
+    ]
+    if sys.platform == "darwin"
+    else [],
+    python_requires=">=3.8",
     entry_points={
         "console_scripts": [
             f"{PACKAGE_NAME}={PACKAGE_NAME}.cli:cli",

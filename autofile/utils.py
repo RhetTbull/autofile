@@ -5,10 +5,7 @@ import platform
 
 def pluralize(count, singular, plural):
     """Return singular or plural based on count"""
-    if count == 1:
-        return singular
-    else:
-        return plural
+    return singular if count == 1 else plural
 
 
 def noop(*args, **kwargs):
