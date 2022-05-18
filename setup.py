@@ -66,15 +66,17 @@ setup(
         "tinytag>=1.8.0,<2.0.0",
         "yaspin>=2.1.0,<3.0.0",
     ]
-    + [
-        "osxmetadata>=0.99.34,<1.0.0",
-        "pyobjc-core>=7.3,<9.0",
-        "pyobjc-framework-Cocoa>=7.3,<9.0",
-        "pyobjc-framework-CoreServices>=7.3,<9.0",
-        "pyobjc-framework-FSEvents>=7.3,<9.0",
-    ]
-    if sys.platform == "darwin"
-    else [],
+    + (
+        [
+            "osxmetadata>=0.99.34,<1.0.0",
+            "pyobjc-core>=7.3,<9.0",
+            "pyobjc-framework-Cocoa>=7.3,<9.0",
+            "pyobjc-framework-CoreServices>=7.3,<9.0",
+            "pyobjc-framework-FSEvents>=7.3,<9.0",
+        ]
+        if sys.platform == "darwin"
+        else []
+    ),
     python_requires=">=3.8",
     entry_points={
         "console_scripts": [
