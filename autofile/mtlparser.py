@@ -508,6 +508,7 @@ class MTLParser:
             "prepend",
             "remove",
             "slice",
+            "sslice",
         ] and (args is None or not len(args)):
             raise SyntaxError(f"{filter_} requires arguments")
 
@@ -524,15 +525,13 @@ class MTLParser:
         elif filter_ == "braces":
             value = ["{" + v + "}" for v in values]
         elif filter_ == "parens":
-            value = ["(" + v + ")" for v in values]
+            value = [f"({v})" for v in values]
         elif filter_ == "brackets":
-            value = ["[" + v + "]" for v in values]
+            value = [f"[{v}]" for v in values]
         elif filter_ == "shell_quote":
             value = [shlex.quote(v) for v in values]
         elif filter_ == "split":
-            # split on delimiter
-            delim = args
-            if delim:
+            if delim := args:
                 new_values = []
                 for v in values:
                     new_values.extend(v.split(delim))
@@ -543,15 +542,15 @@ class MTLParser:
             # chop off characters from the end
             try:
                 chop = int(args)
-            except ValueError:
-                raise SyntaxError(f"Invalid value for chop: {args}")
+            except ValueError as e:
+                raise SyntaxError(f"Invalid value for chop: {args}") from e
             value = [v[:-chop] for v in values] if chop else values
         elif filter_ == "chomp":
             # chop off characters from the beginning
             try:
                 chomp = int(args)
-            except ValueError:
-                raise SyntaxError(f"Invalid value for chomp: {args}")
+            except ValueError as e:
+                raise SyntaxError(f"Invalid value for chomp: {args}") from e
             value = [v[chomp:] for v in values] if chomp else values
         elif filter_ == "autosplit":
             # try to split keyword strings automatically
@@ -591,27 +590,36 @@ class MTLParser:
             value = [v for v in values if v != args]
         elif filter_ == "slice":
             # slice list of values
-            slice_args = args.split(":")
-            if len(slice_args) == 1:
-                start = int(slice_args[0] or 0)
-                end = None
-                step = None
-            elif len(slice_args) == 2:
-                start, end = slice_args
-                start = int(start) if start != "" else None
-                end = int(end) if end != "" else None
-                step = None
-            elif len(slice_args) == 3:
-                start, end, step = slice_args
-                start = int(start) if start != "" else None
-                end = int(end) if end != "" else None
-                step = int(step) if step != "" else None
-            print(f"slice: {start}, {end}, {step}")
-            slice_ = slice(start, end, step)
-            value = values[slice_]
+            value = values[create_slice(args)]
+        elif filter_ == "sslice":
+            # slice each value in a list
+            slice_ = create_slice(args)
+            value = [v[slice_] for v in values]
         elif self.filter_values:
             # call filter function supplied in __init__
             value = self.filter_values(filter_, args, values)
         else:
             raise SyntaxError(f"Unhandled filter: {filter_}")
         return value
+
+
+def create_slice(args):
+    """Create a slice object from a string of args in form "start:end:step" """
+    slice_args = args.split(":")
+    if len(slice_args) == 1:
+        start = int(slice_args[0] or 0)
+        end = None
+        step = None
+    elif len(slice_args) == 2:
+        start, end = slice_args
+        start = int(start) if start != "" else None
+        end = int(end) if end != "" else None
+        step = None
+    elif len(slice_args) == 3:
+        start, end, step = slice_args
+        start = int(start) if start != "" else None
+        end = int(end) if end != "" else None
+        step = int(step) if step != "" else None
+    else:
+        raise SyntaxError(f"Invalid slice: {args}")
+    return slice(start, end, step)
