@@ -504,7 +504,6 @@ class MTLParser:
             "split",
             "chop",
             "chomp",
-            "join",
             "append",
             "prepend",
             "remove",
@@ -578,7 +577,7 @@ class MTLParser:
             value = temp_values
         elif filter_ == "join":
             # join list of values with delimiter
-            delim = args
+            delim = args or ""
             value = [delim.join(values)]
         elif filter_ == "append":
             # append value to list

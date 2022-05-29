@@ -5,6 +5,7 @@ pdfminer.six>=20211012
 pluggy>=1.0.0,<=2.0.0
 python-docx>=0.8.11,<1.0.0
 rich>=11.0.0,<13.0.0
+tenacity==8.0.1
 textX>=2.3.0,<3.0.0
 tinytag>=1.8.0,<2.0.0
 yaspin>=2.1.0,<3.0.0

@@ -72,6 +72,7 @@ TEST_DATA = [
     ["{list|uniq|sort}", ["a", "b", "c"]],
     ["{list|uniq|sort|reverse}", ["c", "b", "a"]],
     ["{list|uniq|sort|reverse|join(:)}", ["c:b:a"]],
+    ["{list|uniq|sort|reverse|join()}", ["cba"]],
     ["{var:myvar,{percent}}{list|uniq|sort|reverse|join(%myvar)}", ["c%b%a"]],
     ["{list|uniq|sort|append(d)}", ["a", "b", "c", "d"]],
     ["{list|uniq|sort|prepend(d)}", ["d", "a", "b", "c"]],
@@ -125,7 +126,7 @@ TEST_DATA = [
     ["{answer < 43?YES,NO}", ["YES"]],
 ]
 
-FILTER_ARGS_REQUIRED = ["split", "chop", "chomp", "join", "append", "prepend", "remove"]
+FILTER_ARGS_REQUIRED = ["split", "chop", "chomp", "append", "prepend", "remove"]
 
 
 class CustomParser:

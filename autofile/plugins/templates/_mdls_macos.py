@@ -5,8 +5,13 @@ import plistlib
 import subprocess
 from typing import Dict, Iterable, List, Optional
 
+from tenacity import retry, stop_after_attempt
+
 import autofile
 from autofile.datetime_utils import datetime_naive_to_utc
+
+# mdls command sometimes fails to return data so retry
+MAX_RETRY_ATTEMPTS = 5
 
 FIELDS = {
     "{mdls}": "Get metadata attributes for file as returned by mdls command; use in form '{mdls:ATTRIBUTE}', for example, '{mdls:kMDItemContentType}'",
@@ -59,6 +64,7 @@ def get_template_value(
     return value if type(value) == list else [value]
 
 
+@retry(stop=stop_after_attempt(MAX_RETRY_ATTEMPTS))
 def load_mdls_data(filepath: str) -> Dict:
     """load mdls data for file
 
@@ -73,6 +79,9 @@ def load_mdls_data(filepath: str) -> Dict:
     if proc.returncode != 0:
         raise subprocess.CalledProcessError(proc.returncode, cmd)
     mdls = plistlib.loads(proc.stdout)
+
+    if not mdls:
+        raise ValueError(f"mdls returned no data for {filepath}")
 
     # plist returns naive datetime, should be UTC, not local timezone so convert if necessary
     for key, value in mdls.items():
