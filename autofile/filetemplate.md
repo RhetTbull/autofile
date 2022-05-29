@@ -8,7 +8,7 @@ Template statements may contain one or more modifiers.  The full syntax is:
 
 Template statements are white-space sensitive meaning that white space (spaces, tabs) changes the meaning of the template statement.
 
-`pretext` and `posttext` are free form text.  For example, if an image file has Title (e.g. XMP:Title) "My file Title". the template statement `"The title of the file is {exiftool:Title}"`, resolves to `"The title of the file is My file Title"`.  The `pretext` in this example is `"The title if the file is "` and the template_field is `{Title}`.  Note: some punctuation such as commas cannot be used in the pretext or posttext.  For this reason, the template system provides special punctuation templates like `{comma}` to insert punctuation where needed. For example: `{exiftool:Make}{comma}{exiftool:Model}` could resolve to `Apple,iPhone SE`. 
+`pretext` and `posttext` are free form text.  For example, if an image file has Title (e.g. XMP:Title) "My file Title". the template statement `"The title of the file is {exiftool:Title}"`, resolves to `"The title of the file is My file Title"`.  The `pretext` in this example is `"The title if the file is "` and the template_field is `{Title}`.  Note: some punctuation such as commas cannot be used in the pretext or posttext.  For this reason, the template system provides special punctuation templates like `{comma}` to insert punctuation where needed. For example: `{exiftool:Make}{comma}{exiftool:Model}` could resolve to `Apple,iPhone SE`.
 
 **Delimiter**
 
@@ -53,6 +53,7 @@ Valid filters are:
 - append(x): Append x to list of values, e.g. append(d): ['a', 'b', 'c'] => ['a', 'b', 'c', 'd'].
 - prepend(x): Prepend x to list of values, e.g. prepend(d): ['a', 'b', 'c'] => ['d', 'a', 'b', 'c'].
 - remove(x): Remove x from list of values, e.g. remove(b): ['a', 'b', 'c'] => ['a', 'c'].
+- slice(start:stop:step): Slice list using same semantics as Python's list slicing, e.g. slice(1:3): ['a', 'b', 'c', 'd'] => ['b', 'c']; slice(1:4:2): ['a', 'b', 'c', 'd'] => ['b', 'd']; slice(1:): ['a', 'b', 'c', 'd'] => ['b', 'c', 'd']; slice(:-1): ['a', 'b', 'c', 'd'] => ['a', 'b', 'c']; slice(::-1): ['a', 'b', 'c', 'd'] => ['d', 'c', 'b', 'a'].
 
 <!-- - shell_quote: Quotes the value for safe usage in the shell, e.g. My file.jpeg => 'My file.jpeg'; only adds quotes if needed.
 - function: Run custom python function to filter value; use in format 'function:/path/to/file.py::function_name'. See example at https://github.com/RhetTbull/osxfiles/blob/master/examples/template_filter.py
@@ -75,7 +76,7 @@ e.g. if an image file description is "my description":
 
 **Conditional Operators**
 
-`conditional`: optional conditional expression that is evaluated as boolean (True/False) for use with the `?bool_value` modifier.  Conditional expressions take the form '` not operator value`' where `not` is an optional modifier that negates the `operator`.  Note: the space before the conditional expression is required if you use a conditional expression.  Valid comparison operators are:
+`conditional`: optional conditional expression that is evaluated as boolean (True/False) for use with the `?bool_value` modifier.  Conditional expressions take the form '`not operator value`' where `not` is an optional modifier that negates the `operator`.  Note: the space before the conditional expression is required if you use a conditional expression.  Valid comparison operators are:
 
 - `contains`: template field contains value, similar to python's `in`
 - `matches`: template field contains exactly value, unlike `contains`: does not match partial matches
@@ -108,7 +109,7 @@ e.g. if file has a title
 
 - `"{audio:title?I have a title,I do not have a title}"` renders to `"I have a title"`
 
-and if it does not have a title: 
+and if it does not have a title:
 
 - `"{audio:title?I have a title,I do not have a title}"` renders to `"I do not have a title"`
 
@@ -140,4 +141,4 @@ Variables can also be referenced as fields in the template string, for example: 
 
 If you need to use a `%` (percent sign character), you can escape the percent sign by using `%%`.  You can also use the `{percent}` template field where a template field is required. For example:
 
-`{audio:title[:,%%]}` replaces the `:` with `%` and `{audio:title contains Foo?{audio:title}{percent},{audio:title}}` adds `%` to the audio title if it contains `Foo`. 
+`{audio:title[:,%%]}` replaces the `:` with `%` and `{audio:title contains Foo?{audio:title}{percent},{audio:title}}` adds `%` to the audio title if it contains `Foo`.

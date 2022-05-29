@@ -5,7 +5,7 @@ import plistlib
 import subprocess
 from typing import Dict, Iterable, List, Optional
 
-from tenacity import retry, stop_after_attempt
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 import autofile
 from autofile.datetime_utils import datetime_naive_to_utc
@@ -64,7 +64,7 @@ def get_template_value(
     return value if type(value) == list else [value]
 
 
-@retry(stop=stop_after_attempt(MAX_RETRY_ATTEMPTS))
+@retry(stop=stop_after_attempt(MAX_RETRY_ATTEMPTS), wait=wait_fixed(0.1))
 def load_mdls_data(filepath: str) -> Dict:
     """load mdls data for file
 

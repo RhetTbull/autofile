@@ -507,6 +507,7 @@ class MTLParser:
             "append",
             "prepend",
             "remove",
+            "slice",
         ] and (args is None or not len(args)):
             raise SyntaxError(f"{filter_} requires arguments")
 
@@ -588,6 +589,26 @@ class MTLParser:
         elif filter_ == "remove":
             # remove value from list
             value = [v for v in values if v != args]
+        elif filter_ == "slice":
+            # slice list of values
+            slice_args = args.split(":")
+            if len(slice_args) == 1:
+                start = int(slice_args[0] or 0)
+                end = None
+                step = None
+            elif len(slice_args) == 2:
+                start, end = slice_args
+                start = int(start) if start != "" else None
+                end = int(end) if end != "" else None
+                step = None
+            elif len(slice_args) == 3:
+                start, end, step = slice_args
+                start = int(start) if start != "" else None
+                end = int(end) if end != "" else None
+                step = int(step) if step != "" else None
+            print(f"slice: {start}, {end}, {step}")
+            slice_ = slice(start, end, step)
+            value = values[slice_]
         elif self.filter_values:
             # call filter function supplied in __init__
             value = self.filter_values(filter_, args, values)
