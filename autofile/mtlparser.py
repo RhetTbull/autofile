@@ -585,6 +585,12 @@ class MTLParser:
         elif filter_ == "prepend":
             # prepend value to list
             value = [args] + values
+        elif filter_ == "appends":
+            # append value to each item in list
+            value = [f"{v}{args}" for v in values]
+        elif filter_ == "prepends":
+            # prepend value to each item in list
+            value = [f"{args}{v}" for v in values]
         elif filter_ == "remove":
             # remove value from list
             value = [v for v in values if v != args]
