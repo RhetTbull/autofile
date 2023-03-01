@@ -263,8 +263,20 @@ Valid filters are:
    ['a', 'b', 'c', 'd'].                                                       
  • prepend(x): Prepend x to list of values, e.g. prepend(d): ['a', 'b', 'c'] =>
    ['d', 'a', 'b', 'c'].                                                       
+ • appends(x): [append s(tring)] Append x to each value of list of values, e.g.
+   appends(d): ['a', 'b', 'c'] => ['ad', 'bd', 'cd'].                          
+ • prepends(x): [prepend s(tring)] Prepend x to each value of list of values,  
+   e.g. prepends(d): ['a', 'b', 'c'] => ['da', 'db', 'dc'].                    
  • remove(x): Remove x from list of values, e.g. remove(b): ['a', 'b', 'c'] => 
    ['a', 'c'].                                                                 
+ • slice(start:stop:step): Slice list using same semantics as Python's list    
+   slicing, e.g. slice(1:3): ['a', 'b', 'c', 'd'] => ['b', 'c']; slice(1:4:2): 
+   ['a', 'b', 'c', 'd'] => ['b', 'd']; slice(1:): ['a', 'b', 'c', 'd'] => ['b',
+   'c', 'd']; slice(:-1): ['a', 'b', 'c', 'd'] => ['a', 'b', 'c']; slice(::-1):
+   ['a', 'b', 'c', 'd'] => ['d', 'c', 'b', 'a']. See also sslice().            
+ • sslice(start:stop:step): [s(tring) slice] Slice values in a list using same 
+   semantics as Python's string slicing, e.g. sslice(1:3):'abcd => 'bc';       
+   sslice(1:4:2): 'abcd' => 'bd', etc. See also slice().                       
 
 e.g. if file keywords are ["FOO","bar"]:                                       
 
@@ -290,7 +302,7 @@ Conditional Operators
 
 conditional: optional conditional expression that is evaluated as boolean      
 (True/False) for use with the ?bool_value modifier.  Conditional expressions   
-take the form ' not operator value' where not is an optional modifier that     
+take the form 'not operator value' where not is an optional modifier that      
 negates the operator.  Note: the space before the conditional expression is    
 required if you use a conditional expression.  Valid comparison operators are: 
 
