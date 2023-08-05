@@ -405,7 +405,7 @@ so: {var:pipe,{pipe}}{audio:title[-,%pipe]} which replaces the - character with
 | (the value of %pipe).                                                        
 
 Variables can also be referenced as fields in the template string, for example:
-{var:year,created.year}{filepath.stem}-{%year}{filepath.suffix}. In some cases,
+{var:year,{created.year}}{filepath.stem}-{%year}{filepath.suffix}. In some cases,
 use of variables can make your template string more readable.  Variables can be
 used as template fields, as values for filters, as values for conditional      
 operations, or as default values.  When used as a conditional value or default 
