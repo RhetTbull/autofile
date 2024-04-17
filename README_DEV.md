@@ -21,3 +21,9 @@ These are notes to help me remember how to do things when I come back to this pr
   ```bash
   python -m build
   ```
+
+## Publish
+
+  ```bash
+  twine upload dist/*.tar.gz dist/*.whl
+  ```
