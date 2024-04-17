@@ -75,7 +75,8 @@ class _ExifToolProc:
 
     def __init__(self, exiftool=None):
         """construct _ExifToolProc singleton object or return instance of already created object
-        exiftool: optional path to exiftool binary (if not provided, will search path to find it)"""
+        exiftool: optional path to exiftool binary (if not provided, will search path to find it)
+        """
 
         if hasattr(self, "_process_running") and self._process_running:
             # already running

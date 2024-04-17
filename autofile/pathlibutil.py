@@ -1,9 +1,9 @@
 """ FileUtil class with methods for copy, hardlink, unlink, etc. Works with pathlib.Path """
 
+import os
 import pathlib
 import platform
 import shutil
-import os
 
 # python version as 2-digit float (e.g. 3.7)
 PY_VERSION = float(".".join(platform.python_version_tuple()[:2]))
@@ -158,6 +158,9 @@ class PathlibUtil:
     def _pyobjc(self):
         return PYOBJC
 
+    def __fspath__(self):
+        return str(self.path)
+
     def __str__(self):
         return self.path.__str__()
 
@@ -166,13 +169,15 @@ class PathlibUtil:
 
     def __truediv__(self, key):
         try:
-            return self.path._make_child((key,))
+            self.path = self.path / key
+            return self
         except TypeError:
             return NotImplemented
 
     def __rtruediv__(self, key):
         try:
-            return self.path._from_parts([key] + self._parts)
+            self.path = key / self.path
+            return self
         except TypeError:
             return NotImplemented
 

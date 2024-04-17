@@ -135,9 +135,7 @@ class FileTemplate:
         sanitize_value = (
             sanitize_dirname
             if options.dirname
-            else sanitize_pathpart
-            if options.filename
-            else None
+            else sanitize_pathpart if options.filename else None
         )
         sanitize = sanitize_filename if options.filename else None
 

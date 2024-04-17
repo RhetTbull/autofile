@@ -2,8 +2,8 @@
 
 import locale
 import os
-import sys
 import platform
+import sys
 import tempfile
 
 import pytest
@@ -292,7 +292,7 @@ def test_template_finder():
     with tempfile.TemporaryDirectory() as tmpdir:
         test_file = PathlibUtil(PHOTO_FILE).copy_to(tmpdir)
         md = osxmetadata.OSXMetaData(test_file)
-        md.tags = [osxmetadata.Tag("Foo")]
+        md.tags = [osxmetadata.Tag("Foo", 0)]
         md.findercomment = "FizzBuzz"
 
         template = FileTemplate(test_file)

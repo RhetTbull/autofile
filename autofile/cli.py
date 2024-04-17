@@ -37,8 +37,8 @@ from yaspin import yaspin
 from ._version import __version__
 from .autofile import MultipleFilesError, process_files
 from .constants import APP_NAME
-from .renderoptions import RenderOptions
 from .filetemplate import get_template_help
+from .renderoptions import RenderOptions
 from .utils import bold, green, pluralize, red
 
 # Set up rich console

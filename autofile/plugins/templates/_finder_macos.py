@@ -1,7 +1,8 @@
 """plugin for autofile to access Finder metadata (e.g. tags, comments); MacOS only"""
 
-from osxmetadata import OSXMetaData
 from typing import Dict, Iterable, List, Optional
+
+from osxmetadata import OSXMetaData
 
 import autofile
 from autofile.datetime_utils import datetime_naive_to_utc

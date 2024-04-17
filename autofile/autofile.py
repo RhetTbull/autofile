@@ -1,4 +1,5 @@
 """Automatically file files based on metadata templates"""
+
 import fnmatch
 import pathlib
 import re
