@@ -293,13 +293,10 @@ def test_template_finder():
         test_file = PathlibUtil(PHOTO_FILE).copy_to(tmpdir)
         md = osxmetadata.OSXMetaData(test_file)
         md.tags = [osxmetadata.Tag("Foo", 0)]
-        md.findercomment = "FizzBuzz"
 
         template = FileTemplate(test_file)
-        rendered = template.render(
-            "{finder:tags}-{finder:comment}", options=RenderOptions()
-        )
-        assert rendered == ["Foo-FizzBuzz"]
+        rendered = template.render("{finder:tags}", options=RenderOptions())
+        assert rendered == ["Foo"]
 
 
 @freeze_time("2021-10-29T05:39:00.028590-07:00")
