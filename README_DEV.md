@@ -16,6 +16,10 @@ These are notes to help me remember how to do things when I come back to this pr
   pytest
   ```
 
+## Update version
+
+Manually update `__version__` in `autofile/_version.py`
+
 ## Build
 
   ```bash

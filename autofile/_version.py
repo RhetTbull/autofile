@@ -1,3 +1,3 @@
 """ version for autofile """
 
-__version__ = "0.0.44"
+__version__ = "0.1.0"
